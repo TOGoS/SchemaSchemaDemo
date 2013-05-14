@@ -5,6 +5,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.ArrayList;
+import java.util.Collections;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
@@ -66,18 +68,30 @@ public class SchemaProcessor
 		RelationalClassFilter relationalClassFilter = new RelationalClassFilter();
 		
 		{
-			final FileWriter sqlWriter = new FileWriter(new File("create-tables.sql"));
-			final SQLEmitter sqlEmitter = new SQLEmitter();
-			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(sqlEmitter, PASCAL_CASIFIER, PASCAL_CASIFIER);
+			final ArrayList<String> tableList = new ArrayList<String>();
+			final FileWriter createTablesWriter = new FileWriter(new File("create-tables.sql"));
+			final SQLEmitter createTablesSqlEmitter = new SQLEmitter();
+			
+			final FileWriter dropTablesWriter = new FileWriter(new File("drop-tables.sql"));
+			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter();
+			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, PASCAL_CASIFIER, PASCAL_CASIFIER);
 			tcsg.pipe(new StreamDestination<TableDefinition>() {
 				@Override public void data(TableDefinition td) throws Exception {
-					sqlEmitter.emitTableCreation(td);
+					createTablesSqlEmitter.emitTableCreation(td);
+					tableList.add(td.name);
 				};
 				@Override public void end() throws Exception {
-					sqlWriter.close();
+					createTablesSqlEmitter.end();
+					
+					Collections.reverse(tableList);
+					for( String tableName : tableList ) {
+						dropTablesSqlEmitter.emitDropTable(tableName);
+					}
+					dropTablesSqlEmitter.end();
 				}
 			});
-			StreamUtil.pipe(sqlEmitter, sqlWriter, false);
+			StreamUtil.pipe(createTablesSqlEmitter, createTablesWriter, true);
+			StreamUtil.pipe(dropTablesSqlEmitter, dropTablesWriter, true);
 			relationalClassFilter.pipe(tcsg);
 		}
 		sp.pipe( relationalClassFilter );
