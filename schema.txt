@@ -29,12 +29,12 @@ enum mood {
 redefine class 'relational class' : extends(class) : is relational class
 
 relational class 'resource' {
-	ID : entity ID
+	ID : entity ID : key(primary)
 	URN : string
 }
 
 relational class 'person' {
-	ID : entity ID
+	ID : entity ID : key(primary)
 	name : string
 }
 
