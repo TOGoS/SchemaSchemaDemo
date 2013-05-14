@@ -1,0 +1,53 @@
+class 'integer' :
+	SQL type @ "INT" :
+	PHP type @ "int" : JSON type @ "number"
+class 'boolean' :
+	SQL type @ "BOOLEAN" : MySQL type @ "TINYINT(1)" :
+	PHP type @ "bool" : JSON type @ "boolean"
+class 'string'  :
+	SQL type @ "VARCHAR(127)" :
+	PHP type @ "string" : JSON type @ "string"
+class 'text' : extends(string) :
+	SQL type @ "TEXT"
+class 'entity ID' : extends(integer) :
+	SQL type @ "BIGINT"
+class 'percentage' : extends(integer) :
+    SQL type @ "SMALLINT"
+
+enum mood {
+	'ugh!'
+	really bad
+	meh
+	sort of okay
+	nice
+	pretty sweet
+	'rad!'
+}
+
+# Need to 'redefine' because there's already a 'relational class' modifier that's
+# shorthand for 'is relational class'.  Shouldn't need to 'redefine' because of this.
+redefine class 'relational class' : extends(class) : is relational class
+
+relational class 'resource' {
+	ID : entity ID
+	URN : string
+}
+
+relational class 'person' {
+	ID : entity ID
+	name : string
+}
+
+relational class 'rating' {
+	author : reference(person) {
+		ID = author ID : key(primary)
+	}
+	subject : reference(resource) {
+		ID = subject ID : key(primary)
+	}
+	
+	comment          : text       : nullable
+	quality rating   : percentage : nullable
+	resource is fake : boolean    : nullable
+	feeling          : mood       : nullable
+}

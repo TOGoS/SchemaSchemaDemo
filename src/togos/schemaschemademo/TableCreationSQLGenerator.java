@@ -1,0 +1,117 @@
+package togos.schemaschemademo;
+
+import static togos.schemaschema.PropertyUtil.getFirstInheritedValue;
+import static togos.schemaschema.PropertyUtil.isTrue;
+
+import java.util.ArrayList;
+
+import togos.asyncstream.BaseStreamSource;
+import togos.asyncstream.StreamDestination;
+import togos.codeemitter.sql.SQLEmitter;
+import togos.codeemitter.structure.Expression;
+import togos.codeemitter.structure.ScalarLiteral;
+import togos.codeemitter.structure.rdb.ColumnDefinition;
+import togos.codeemitter.structure.rdb.ForeignKeyConstraint;
+import togos.codeemitter.structure.rdb.IndexDefinition;
+import togos.codeemitter.structure.rdb.TableDefinition;
+import togos.function.Function;
+import togos.schemaschema.ComplexType;
+import togos.schemaschema.EnumType;
+import togos.schemaschema.FieldSpec;
+import togos.schemaschema.ForeignKeySpec;
+import togos.schemaschema.IndexSpec;
+import togos.schemaschema.Predicates;
+import togos.schemaschema.SchemaObject;
+
+public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition> implements StreamDestination<ComplexType>
+{
+	final SQLEmitter sqlEmitter; // Only needed to encode values for enums. TODO: Let it encode them itself.
+	final Function<String,String> tableNamer;
+	final Function<String,String> columnNamer;
+	
+	public TableCreationSQLGenerator( SQLEmitter sqlEmitter, Function<String,String> tableNamer, Function<String,String> columnNamer ) {
+		this.sqlEmitter = sqlEmitter;
+		this.tableNamer = tableNamer;
+		this.columnNamer = columnNamer;
+	}
+	
+	protected Expression valueToExpression( SchemaObject obj ) {
+		return new ScalarLiteral(obj.getScalarValue(), obj.getSourceLocation());
+	}
+	
+	protected String getSqlType( SchemaObject type ) {
+		return getFirstInheritedValue(
+			type,
+			SSDPredicates.SQL_TYPE,
+			String.class,
+			null
+		);
+	}
+	
+	protected ColumnDefinition toColumnDefinition( FieldSpec fs ) {
+		SchemaObject objectType = getFirstInheritedValue( fs, Predicates.OBJECTS_ARE_MEMBERS_OF );
+		
+		String sqlType = getSqlType(objectType);
+		
+		if( sqlType == null && isTrue( objectType, Predicates.IS_ENUM_TYPE ) ) {
+			// TODO: Shouldn't require it to actually be an EnumType object;
+			// valid values should be represented as properties.
+			EnumType enumType = (EnumType)objectType;
+			sqlType = "";
+			for( String name : enumType.getValidValueNames() ) {
+				if( sqlType.length() > 0 ) sqlType += ", ";
+				sqlType += sqlEmitter.quoteText(name);
+			}
+			sqlType = "ENUM(" + sqlType + ")";
+		}
+		
+		if( sqlType == null ) {
+			throw new RuntimeException("Field '"+fs.getName()+"' has no SQL type defined and is not an enum");
+		}
+		
+		return new ColumnDefinition(
+			columnNamer.apply(fs.getName()),
+			sqlType,
+			isTrue(fs, Predicates.IS_NULLABLE),
+			null //valueToExpression( getFirstInheritedValue(fs, F30Predicates.DEFAULT) )
+		);
+	}
+	
+	protected TableDefinition toTableDefinition( ComplexType ct ) {
+		TableDefinition td = new TableDefinition( tableNamer.apply(ct.getName()) );
+		for( FieldSpec fs : ct.getFields() ) {
+			td.columns.add(toColumnDefinition(fs));
+		}
+		for( IndexSpec is : ct.getIndexes() ) {
+			ArrayList<String> indexColumnNames = new ArrayList<String>();
+			for( FieldSpec fs : is.fields ) {
+				indexColumnNames.add( columnNamer.apply(fs.getName()) );
+			}
+			if("primary".equals(is.name) ) {
+				td.primaryKeyColumnNames =  indexColumnNames;
+			} else {
+				td.indexes.add(new IndexDefinition(
+					is.name, indexColumnNames
+				));
+			}
+		}
+		for( ForeignKeySpec fks : ct.getForeignKeys() ) {
+			ArrayList<String> localColumnNames = new ArrayList<String>();
+			ArrayList<String> foreignColumnNames = new ArrayList<String>();
+			for( ForeignKeySpec.Component c : fks.components ) {
+				localColumnNames.add( columnNamer.apply(c.localField.getName()) );
+				foreignColumnNames.add( columnNamer.apply(c.targetField.getName()) );
+			}
+			td.foreignKeyConstraints.add(new ForeignKeyConstraint(
+				null, localColumnNames,
+				tableNamer.apply(fks.target.getName()), foreignColumnNames
+			));
+		}
+		return td;
+	}
+	
+	@Override
+	public void data(ComplexType ct) throws Exception {
+		_data(toTableDefinition(ct));
+	}
+}
