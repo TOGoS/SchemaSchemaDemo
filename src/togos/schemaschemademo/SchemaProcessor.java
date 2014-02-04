@@ -10,11 +10,12 @@ import java.util.Collections;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
-import togos.asyncstream.StreamUtil;
 import togos.codeemitter.WordUtil;
 import togos.codeemitter.sql.SQLEmitter;
 import togos.codeemitter.structure.rdb.TableDefinition;
 import togos.function.Function;
+import togos.lang.BaseSourceLocation;
+import togos.lang.CompileError;
 import togos.schemaschema.ComplexType;
 import togos.schemaschema.Predicates;
 import togos.schemaschema.SchemaObject;
@@ -30,10 +31,10 @@ public class SchemaProcessor
 		}
 	};
 	
-	static class RelationalClassFilter extends BaseStreamSource<ComplexType> implements StreamDestination<SchemaObject>
+	static class RelationalClassFilter<E extends Throwable> extends BaseStreamSource<ComplexType, E> implements StreamDestination<SchemaObject, E>
 	{
 		@Override
-		public void data(SchemaObject value) throws Exception {
+		public void data(SchemaObject value) throws E {
 			if( value instanceof ComplexType && SSDPredicates.isRelationalClass(value) ) {
 				_data((ComplexType)value);
 			}
@@ -65,33 +66,43 @@ public class SchemaProcessor
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		
-		RelationalClassFilter relationalClassFilter = new RelationalClassFilter();
+		RelationalClassFilter<CompileError> relationalClassFilter = new RelationalClassFilter<CompileError>();
 		
 		{
 			final ArrayList<String> tableList = new ArrayList<String>();
 			final FileWriter createTablesWriter = new FileWriter(new File("create-tables.sql"));
-			final SQLEmitter createTablesSqlEmitter = new SQLEmitter();
+			final SQLEmitter createTablesSqlEmitter = new SQLEmitter(createTablesWriter);
 			
 			final FileWriter dropTablesWriter = new FileWriter(new File("drop-tables.sql"));
-			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter();
+			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
 			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, PASCAL_CASIFIER, PASCAL_CASIFIER);
-			tcsg.pipe(new StreamDestination<TableDefinition>() {
-				@Override public void data(TableDefinition td) throws Exception {
-					createTablesSqlEmitter.emitTableCreation(td);
-					tableList.add(td.name);
-				};
-				@Override public void end() throws Exception {
-					createTablesSqlEmitter.end();
-					
-					Collections.reverse(tableList);
-					for( String tableName : tableList ) {
-						dropTablesSqlEmitter.emitDropTable(tableName);
+			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
+				@Override public void data(TableDefinition td) throws CompileError {
+					try {
+						createTablesSqlEmitter.emitTableCreation(td);
+						tableList.add(td.name);
+					} catch( CompileError e ) {
+						throw e;
+					} catch( Exception e ) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
 					}
-					dropTablesSqlEmitter.end();
+				};
+				@Override public void end() throws CompileError {
+					try {
+						createTablesWriter.close();
+						
+						Collections.reverse(tableList);
+						for( String tableName : tableList ) {
+							dropTablesSqlEmitter.emitDropTable(tableName);
+						}
+						dropTablesWriter.close();
+					} catch( CompileError e ) {
+						throw e;
+					} catch( Exception e ) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
 				}
 			});
-			StreamUtil.pipe(createTablesSqlEmitter, createTablesWriter, true);
-			StreamUtil.pipe(dropTablesSqlEmitter, dropTablesWriter, true);
 			relationalClassFilter.pipe(tcsg);
 		}
 		sp.pipe( relationalClassFilter );

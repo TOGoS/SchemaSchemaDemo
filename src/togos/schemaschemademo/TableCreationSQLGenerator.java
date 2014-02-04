@@ -1,6 +1,7 @@
 package togos.schemaschemademo;
 
 import static togos.schemaschema.PropertyUtil.getFirstInheritedValue;
+import static togos.schemaschema.PropertyUtil.getFirstInheritedScalar;
 import static togos.schemaschema.PropertyUtil.isTrue;
 
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import togos.codeemitter.structure.rdb.ForeignKeyConstraint;
 import togos.codeemitter.structure.rdb.IndexDefinition;
 import togos.codeemitter.structure.rdb.TableDefinition;
 import togos.function.Function;
+import togos.lang.CompileError;
 import togos.schemaschema.ComplexType;
 import togos.schemaschema.EnumType;
 import togos.schemaschema.FieldSpec;
@@ -23,7 +25,7 @@ import togos.schemaschema.IndexSpec;
 import togos.schemaschema.Predicates;
 import togos.schemaschema.SchemaObject;
 
-public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition> implements StreamDestination<ComplexType>
+public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition, CompileError> implements StreamDestination<ComplexType, CompileError>
 {
 	final SQLEmitter sqlEmitter; // Only needed to encode values for enums. TODO: Let it encode them itself.
 	final Function<String,String> tableNamer;
@@ -39,21 +41,11 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition>
 		return new ScalarLiteral(obj.getScalarValue(), obj.getSourceLocation());
 	}
 	
-	protected String getSqlType( SchemaObject type ) {
-		return getFirstInheritedValue(
-			type,
-			SSDPredicates.SQL_TYPE,
-			String.class,
-			null
-		);
-	}
-	
 	protected ColumnDefinition toColumnDefinition( FieldSpec fs ) {
 		SchemaObject objectType = getFirstInheritedValue( fs, Predicates.OBJECTS_ARE_MEMBERS_OF );
 		
-		String sqlType = getSqlType(objectType);
-		
-		if( sqlType == null && isTrue( objectType, Predicates.IS_ENUM_TYPE ) ) {
+		String sqlType;
+		if( isTrue( objectType, Predicates.IS_ENUM_TYPE ) ) {
 			// TODO: Shouldn't require it to actually be an EnumType object;
 			// valid values should be represented as properties.
 			EnumType enumType = (EnumType)objectType;
@@ -63,6 +55,13 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition>
 				sqlType += sqlEmitter.quoteText(name);
 			}
 			sqlType = "ENUM(" + sqlType + ")";
+		} else {
+			sqlType = getFirstInheritedScalar(
+				objectType,
+				SSDPredicates.SQL_TYPE,
+				String.class,
+				null
+			);
 		}
 		
 		if( sqlType == null ) {
@@ -87,11 +86,11 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition>
 			for( FieldSpec fs : is.fields ) {
 				indexColumnNames.add( columnNamer.apply(fs.getName()) );
 			}
-			if("primary".equals(is.name) ) {
+			if("primary".equals(is.getName()) ) {
 				td.primaryKeyColumnNames =  indexColumnNames;
 			} else {
 				td.indexes.add(new IndexDefinition(
-					is.name, indexColumnNames
+					is.getName(), indexColumnNames
 				));
 			}
 		}
@@ -111,7 +110,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition>
 	}
 	
 	@Override
-	public void data(ComplexType ct) throws Exception {
+	public void data(ComplexType ct) throws CompileError {
 		_data(toTableDefinition(ct));
 	}
 }
