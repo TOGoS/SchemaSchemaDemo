@@ -54,10 +54,11 @@ public class SchemaProcessor
 			new FileReader(sourceFilename);
 		
 		SchemaInterpreter sp = new SchemaInterpreter();
-			
+		sp.defineImportable( "http://ns.nuke24.net/SchemaSchemaDemo/Predicates", SSDPredicates.allOfThem );
+		
 		sp.defineClassPredicate( Predicates.IS_SELF_KEYED );
 		sp.defineClassPredicate( Predicates.EXTENDS );
-		SSDPredicates.defineOn(sp);
+		//SSDPredicates.defineOn(sp);
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldPredicate( Predicates.IS_NULLABLE );
@@ -65,6 +66,7 @@ public class SchemaProcessor
 		sp.defineType( Types.CLASS );
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
+		CommandInterpreters.defineImportCommand(sp);
 		
 		RelationalClassFilter<CompileError> relationalClassFilter = new RelationalClassFilter<CompileError>();
 		

@@ -2,6 +2,10 @@ package togos.schemaschemademo;
 
 import static togos.schemaschema.PropertyUtil.getType;
 import static togos.schemaschema.PropertyUtil.isTrue;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import togos.lang.BaseSourceLocation;
 import togos.schemaschema.BaseSchemaObject;
 import togos.schemaschema.Predicate;
@@ -14,11 +18,14 @@ import togos.schemaschema.parser.SchemaInterpreter;
 public class SSDPredicates
 {
 	private static final BaseSourceLocation SLOC = new BaseSourceLocation(SSDPredicates.class.getName(), 0, 0);
+	public static Map<String, Predicate> allOfThem = new HashMap<String, Predicate>();
 	
 	private SSDPredicates() { }
 	
 	protected static Predicate def( String name, Type objectType ) {
-		return new Predicate( name, null, objectType, SLOC );
+		Predicate p = new Predicate( name, null, objectType, SLOC );
+		allOfThem.put(name, p);
+		return p;
 	}
 	
 	protected static Predicate def( String name, Type objectType, String comment ) {

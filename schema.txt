@@ -1,3 +1,5 @@
+import everything from 'http://ns.nuke24.net/SchemaSchemaDemo/Predicates'
+
 class 'integer' :
 	SQL type @ "INT" :
 	PHP type @ "int" : JSON type @ "number"
