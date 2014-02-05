@@ -17,9 +17,13 @@ import togos.function.Function;
 import togos.lang.BaseSourceLocation;
 import togos.lang.CompileError;
 import togos.schemaschema.ComplexType;
-import togos.schemaschema.Predicates;
+import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
-import togos.schemaschema.Types;
+import togos.schemaschema.namespaces.Application;
+import togos.schemaschema.namespaces.Core;
+import togos.schemaschema.namespaces.RDB;
+import togos.schemaschema.namespaces.DataTypeTranslation;
+import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
 import togos.schemaschema.parser.SchemaInterpreter;
 
@@ -31,11 +35,11 @@ public class SchemaProcessor
 		}
 	};
 	
-	static class RelationalClassFilter<E extends Throwable> extends BaseStreamSource<ComplexType, E> implements StreamDestination<SchemaObject, E>
+	static class TableClassFilter<E extends Throwable> extends BaseStreamSource<ComplexType, E> implements StreamDestination<SchemaObject, E>
 	{
 		@Override
 		public void data(SchemaObject value) throws E {
-			if( value instanceof ComplexType && SSDPredicates.isRelationalClass(value) ) {
+			if( value instanceof ComplexType && PropertyUtil.getFirstInheritedBoolean(value, Application.HAS_DB_TABLE, false) ) {
 				_data((ComplexType)value);
 			}
 		}
@@ -54,21 +58,20 @@ public class SchemaProcessor
 			new FileReader(sourceFilename);
 		
 		SchemaInterpreter sp = new SchemaInterpreter();
-		sp.defineImportable( "http://ns.nuke24.net/SchemaSchemaDemo/Predicates", SSDPredicates.allOfThem );
+		sp.defineImportable( Core.NS );
+		sp.defineImportable( Application.NS );
+		sp.defineImportable( DataTypeTranslation.NS );
+		sp.defineImportable( Types.NS );
+		sp.defineImportable( Core.RDF_NS );
+		sp.defineImportable( Core.RDFS_NS );
 		
-		sp.defineClassPredicate( Predicates.IS_SELF_KEYED );
-		sp.defineClassPredicate( Predicates.EXTENDS );
-		//SSDPredicates.defineOn(sp);
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
-		sp.defineFieldPredicate( Predicates.IS_NULLABLE );
-		
-		sp.defineType( Types.CLASS );
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineImportCommand(sp);
 		
-		RelationalClassFilter<CompileError> relationalClassFilter = new RelationalClassFilter<CompileError>();
+		TableClassFilter<CompileError> relationalClassFilter = new TableClassFilter<CompileError>();
 		
 		{
 			final ArrayList<String> tableList = new ArrayList<String>();

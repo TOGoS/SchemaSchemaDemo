@@ -1,19 +1,23 @@
-import everything from 'http://ns.nuke24.net/SchemaSchemaDemo/Predicates'
+import everything from 'http://ns.nuke24.net/Schema/'
+import everything from 'http://ns.nuke24.net/Schema/DataTypeTranslation/'
 
-class 'integer' :
+import 'http://ns.nuke24.net/Schema/Application/hasAnAssociatedDatabaseTable' as 'HADBT'
+import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
+
+redefine class 'integer' :
 	SQL type @ "INT" :
 	PHP type @ "int" : JSON type @ "number"
-class 'boolean' :
-	SQL type @ "BOOLEAN" : MySQL type @ "TINYINT(1)" :
+redefine class 'boolean' :
+	SQL type @ "BOOLEAN" :
 	PHP type @ "bool" : JSON type @ "boolean"
-class 'string'  :
+redefine class 'string' :
 	SQL type @ "VARCHAR(127)" :
 	PHP type @ "string" : JSON type @ "string"
-class 'text' : extends(string) :
+redefine class 'text' : extends(string) :
 	SQL type @ "TEXT"
-class 'entity ID' : extends(integer) :
+redefine class 'entity ID' : extends(integer) :
 	SQL type @ "BIGINT"
-class 'percentage' : extends(integer) :
+redefine class 'percentage' : extends(integer) :
     SQL type @ "SMALLINT"
 
 enum mood {
@@ -26,21 +30,17 @@ enum mood {
 	'rad!'
 }
 
-# Need to 'redefine' because there's already a 'relational class' modifier that's
-# shorthand for 'is relational class'.  Shouldn't need to 'redefine' because of this.
-redefine class 'relational class' : extends(class) : is relational class
-
-relational class 'resource' {
+class 'resource' : HADBT {
 	ID : entity ID : key(primary)
 	URN : string
 }
 
-relational class 'person' {
+class 'person' : HADBT {
 	ID : entity ID : key(primary)
 	name : string
 }
 
-relational class 'rating' {
+class 'rating' : HADBT {
 	author : reference(person) {
 		ID = author ID : key(primary)
 	}

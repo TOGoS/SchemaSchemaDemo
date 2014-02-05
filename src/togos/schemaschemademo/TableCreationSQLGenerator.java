@@ -1,7 +1,7 @@
 package togos.schemaschemademo;
 
-import static togos.schemaschema.PropertyUtil.getFirstInheritedValue;
 import static togos.schemaschema.PropertyUtil.getFirstInheritedScalar;
+import static togos.schemaschema.PropertyUtil.getFirstInheritedValue;
 import static togos.schemaschema.PropertyUtil.isTrue;
 
 import java.util.ArrayList;
@@ -22,8 +22,9 @@ import togos.schemaschema.EnumType;
 import togos.schemaschema.FieldSpec;
 import togos.schemaschema.ForeignKeySpec;
 import togos.schemaschema.IndexSpec;
-import togos.schemaschema.Predicates;
 import togos.schemaschema.SchemaObject;
+import togos.schemaschema.namespaces.Core;
+import togos.schemaschema.namespaces.DataTypeTranslation;
 
 public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition, CompileError> implements StreamDestination<ComplexType, CompileError>
 {
@@ -42,10 +43,10 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 	}
 	
 	protected ColumnDefinition toColumnDefinition( FieldSpec fs ) {
-		SchemaObject objectType = getFirstInheritedValue( fs, Predicates.OBJECTS_ARE_MEMBERS_OF );
+		SchemaObject objectType = getFirstInheritedValue( fs, Core.VALUE_TYPE );
 		
 		String sqlType;
-		if( isTrue( objectType, Predicates.IS_ENUM_TYPE ) ) {
+		if( isTrue( objectType, Core.IS_ENUM_TYPE ) ) {
 			// TODO: Shouldn't require it to actually be an EnumType object;
 			// valid values should be represented as properties.
 			EnumType enumType = (EnumType)objectType;
@@ -58,7 +59,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 		} else {
 			sqlType = getFirstInheritedScalar(
 				objectType,
-				SSDPredicates.SQL_TYPE,
+				DataTypeTranslation.SQL_TYPE,
 				String.class,
 				null
 			);
@@ -71,7 +72,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 		return new ColumnDefinition(
 			columnNamer.apply(fs.getName()),
 			sqlType,
-			isTrue(fs, Predicates.IS_NULLABLE),
+			isTrue(fs, Core.IS_NULLABLE),
 			null //valueToExpression( getFirstInheritedValue(fs, F30Predicates.DEFAULT) )
 		);
 	}
