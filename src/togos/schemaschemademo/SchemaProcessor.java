@@ -21,7 +21,6 @@ import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
 import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.Core;
-import togos.schemaschema.namespaces.RDB;
 import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
