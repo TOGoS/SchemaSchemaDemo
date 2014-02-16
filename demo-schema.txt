@@ -1,24 +1,27 @@
 import everything from 'http://ns.nuke24.net/Schema/'
 import everything from 'http://ns.nuke24.net/Schema/DataTypeTranslation/'
+import everything from 'http://ns.nuke24.net/Schema/Application/'
 
-import 'http://ns.nuke24.net/Schema/Application/hasAnAssociatedDatabaseTable' as 'HADBT'
 import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
 
-redefine class 'integer' :
+class 'integer' :
 	SQL type @ "INT" :
 	PHP type @ "int" : JSON type @ "number"
-redefine class 'boolean' :
+class 'boolean' :
 	SQL type @ "BOOLEAN" :
 	PHP type @ "bool" : JSON type @ "boolean"
-redefine class 'string' :
+class 'string' :
 	SQL type @ "VARCHAR(127)" :
 	PHP type @ "string" : JSON type @ "string"
-redefine class 'text' : extends(string) :
+class 'text' : extends(string) :
 	SQL type @ "TEXT"
-redefine class 'entity ID' : extends(integer) :
+class 'entity ID' : extends(integer) :
 	SQL type @ "BIGINT"
-redefine class 'percentage' : extends(integer) :
+class 'percentage' : extends(integer) :
     SQL type @ "SMALLINT"
+
+# Standard Rest Resource
+class modifier 'SRR' = has a database table : has a REST service : members are public
 
 enum mood {
 	'ugh!'
@@ -30,17 +33,17 @@ enum mood {
 	'rad!'
 }
 
-class 'resource' : HADBT {
+class 'resource' : SRR {
 	ID : entity ID : key(primary)
 	URN : string
 }
 
-class 'person' : HADBT {
+class 'person' : SRR {
 	ID : entity ID : key(primary)
 	name : string
 }
 
-class 'rating' : HADBT {
+class 'rating' : SRR {
 	author : reference(person) {
 		ID = author ID : key(primary)
 	}
