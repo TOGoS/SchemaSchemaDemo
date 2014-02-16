@@ -23,6 +23,7 @@ import togos.schemaschema.SchemaObject;
 import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.Core;
 import togos.schemaschema.namespaces.DataTypeTranslation;
+import togos.schemaschema.namespaces.RDB;
 import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
 import togos.schemaschema.parser.SchemaInterpreter;
@@ -81,12 +82,13 @@ public class SchemaProcessor
 			new FileReader(sourceFilename);
 		
 		SchemaInterpreter sp = new SchemaInterpreter();
-		sp.defineImportable( Core.NS );
 		sp.defineImportable( Application.NS );
-		sp.defineImportable( DataTypeTranslation.NS );
-		sp.defineImportable( Types.NS );
+		sp.defineImportable( Core.NS );
 		sp.defineImportable( Core.RDF_NS );
 		sp.defineImportable( Core.RDFS_NS );
+		sp.defineImportable( DataTypeTranslation.NS );
+		sp.defineImportable( RDB.NS );
+		sp.defineImportable( Types.NS );
 		
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
