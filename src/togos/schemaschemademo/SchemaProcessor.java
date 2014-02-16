@@ -82,7 +82,7 @@ public class SchemaProcessor
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineImportCommand(sp);
 		
-		TableClassFilter<CompileError> relationalClassFilter = new TableClassFilter<CompileError>();
+		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
 		
 		{
 			final ArrayList<String> tableList = new ArrayList<String>();
@@ -119,9 +119,36 @@ public class SchemaProcessor
 					}
 				}
 			});
-			relationalClassFilter.pipe(tcsg);
+			tableClassFilter.pipe(tcsg);
 		}
-		sp.pipe( relationalClassFilter );
+		
+		{
+			final FileWriter phpSchemaWriter = new FileWriter(new File("schema.php"));
+			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter);
+			tableClassFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
+				@Override public void data(ComplexType value) throws CompileError {
+					try {
+						psd.data(value);
+					} catch( CompileError e ) {
+						throw e;
+					} catch( Exception e ) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
+				};
+				@Override public void end() throws CompileError {
+					try {
+						psd.end();
+						phpSchemaWriter.close();
+					} catch( CompileError e ) {
+						throw e;
+					} catch( Exception e ) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
+				}
+			});
+		}
+		
+		sp.pipe( tableClassFilter );
 		
 		sp.parse( sourceReader, sourceFilename );
 	}
