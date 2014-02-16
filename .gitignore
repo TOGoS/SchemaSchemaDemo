@@ -1,4 +1,5 @@
 .java-src.lst
 bin
+demo-output
 ext-lib
 SchemaSchemaDemo.jar
