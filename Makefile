@@ -1,7 +1,11 @@
 tjbuilder = java -jar util/TJBuilder.jar
 touch = ${tjbuilder} touch
 
-all: SchemaSchemaDemo.jar
+all: \
+	SchemaSchemaDemo.jar \
+	create-tables.sql \
+	drop-tables.sql \
+	schema.php
 
 clean:
 	rm -rf bin ext-lib jar-content SchemaSchemaDemo.jar
@@ -33,3 +37,14 @@ bin: src ext-lib
 
 SchemaSchemaDemo.jar: bin
 	jar cfe "$@" togos.schemaschemademo.SchemaProcessor -C bin .
+
+#### Demo stuff
+
+create-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar demo-schema.txt
+
+drop-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar demo-schema.txt
+
+schema.php: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar demo-schema.txt
