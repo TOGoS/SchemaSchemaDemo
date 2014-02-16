@@ -3,9 +3,9 @@ touch = ${tjbuilder} touch
 
 all: \
 	SchemaSchemaDemo.jar \
-	create-tables.sql \
-	drop-tables.sql \
-	schema.php
+	demo-output/db-scripts/create-tables.sql \
+	demo-output/db-scripts/drop-tables.sql \
+	demo-output/schema.php
 
 clean:
 	rm -rf bin ext-lib jar-content SchemaSchemaDemo.jar
@@ -40,11 +40,11 @@ SchemaSchemaDemo.jar: bin
 
 #### Demo stuff
 
-create-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
-	java -jar SchemaSchemaDemo.jar demo-schema.txt
+demo-output/db-scripts/create-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar -o-db-scripts demo-output/db-scripts demo-schema.txt
 
-drop-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
-	java -jar SchemaSchemaDemo.jar demo-schema.txt
+demo-output/db-scripts/drop-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar -o-db-scripts demo-output/db-scripts demo-schema.txt
 
-schema.php: SchemaSchemaDemo.jar demo-schema.txt
-	java -jar SchemaSchemaDemo.jar demo-schema.txt
+demo-output/schema.php: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar -o-php-schema demo-output/demo-schema.php generated/db-scriptsdemo-schema.txt

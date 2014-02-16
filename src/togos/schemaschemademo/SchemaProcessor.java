@@ -10,6 +10,7 @@ import java.util.Collections;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
+import togos.codeemitter.FileUtil;
 import togos.codeemitter.WordUtil;
 import togos.codeemitter.sql.SQLEmitter;
 import togos.codeemitter.structure.rdb.TableDefinition;
@@ -47,14 +48,23 @@ public class SchemaProcessor
 	static String USAGE_TEXT =
 		"Usage: SchemaProcessor [options] [schema file]\n" +
 		"Options:\n" +
+		"  -o-schema-php <file.php>\n" +
+		"  -o-db-scripts <dir>\n" +
 		"  -? or -h ; output help text and exit";
 	
 	public static void main( String[] args ) throws Exception {
 		String sourceFilename = "-";
+		File outputSchemaPhpFile = null;
+		File outputDatabaseScriptDir = null;
+		
 		for( int i=0; i<args.length; ++i ) {
 			if( "-?".equals(args[i]) || "-h".equals(args[i]) || "--help".equals(args[i]) ) {
 				System.out.println(USAGE_TEXT);
 				System.exit(0);
+			} else if( "-o-schema-php".equals(args[i]) ) {
+				outputSchemaPhpFile = new File(args[++i]);
+			} else if( "-o-db-scripts".equals(args[i]) ) {
+				outputDatabaseScriptDir = new File(args[++i]);
 			} else if( !args[i].startsWith("-") ) {
 				sourceFilename = args[i];
 			} else {
@@ -63,6 +73,8 @@ public class SchemaProcessor
 				System.exit(1);
 			}
 		}
+		
+		boolean didSomething = false;
 		
 		Reader sourceReader = "-".equals(sourceFilename) ?
 			new InputStreamReader(System.in) :
@@ -84,12 +96,14 @@ public class SchemaProcessor
 		
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
 		
-		{
+		if( outputDatabaseScriptDir != null ) {
+			if( !outputDatabaseScriptDir.exists() ) outputDatabaseScriptDir.mkdirs();
+			
 			final ArrayList<String> tableList = new ArrayList<String>();
-			final FileWriter createTablesWriter = new FileWriter(new File("create-tables.sql"));
+			final FileWriter createTablesWriter = new FileWriter(new File(outputDatabaseScriptDir, "create-tables.sql"));
 			final SQLEmitter createTablesSqlEmitter = new SQLEmitter(createTablesWriter);
 			
-			final FileWriter dropTablesWriter = new FileWriter(new File("drop-tables.sql"));
+			final FileWriter dropTablesWriter = new FileWriter(new File(outputDatabaseScriptDir, "drop-tables.sql"));
 			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
 			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, PASCAL_CASIFIER, PASCAL_CASIFIER);
 			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
@@ -120,10 +134,13 @@ public class SchemaProcessor
 				}
 			});
 			tableClassFilter.pipe(tcsg);
+			didSomething = true;
 		}
 		
-		{
-			final FileWriter phpSchemaWriter = new FileWriter(new File("schema.php"));
+		if( outputSchemaPhpFile != null ) {
+			FileUtil.mkParentDirs(outputSchemaPhpFile);
+			
+			final FileWriter phpSchemaWriter = new FileWriter(outputSchemaPhpFile);
 			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter);
 			tableClassFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
 				@Override public void data(ComplexType value) throws CompileError {
@@ -146,10 +163,15 @@ public class SchemaProcessor
 					}
 				}
 			});
+			didSomething = true;
 		}
 		
 		sp.pipe( tableClassFilter );
 		
 		sp.parse( sourceReader, sourceFilename );
+		
+		if( !didSomething ) {
+			System.err.println("Warning: Didn't do anything.  Maybe you want to -o-<something>");
+		}
 	}
 }
