@@ -44,11 +44,23 @@ public class SchemaProcessor
 		}
 	}
 	
+	static String USAGE_TEXT =
+		"Usage: SchemaProcessor [options] [schema file]\n" +
+		"Options:\n" +
+		"  -? or -h ; output help text and exit";
+	
 	public static void main( String[] args ) throws Exception {
 		String sourceFilename = "-";
 		for( int i=0; i<args.length; ++i ) {
-			if( !args[i].startsWith("-") ) {
+			if( "-?".equals(args[i]) || "-h".equals(args[i]) || "--help".equals(args[i]) ) {
+				System.out.println(USAGE_TEXT);
+				System.exit(0);
+			} else if( !args[i].startsWith("-") ) {
 				sourceFilename = args[i];
+			} else {
+				System.err.println("Unrecognized argument: "+args[i]);
+				System.err.println(USAGE_TEXT);
+				System.exit(1);
 			}
 		}
 		
