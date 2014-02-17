@@ -157,7 +157,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		boolean membersAreMutable = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_MUTABLE, false);
 		boolean membersArePublic = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_PUBLIC, false);
 		
-		openObject("EarthIT_Schema_ApplicationResourceClass");
+		openObject("EarthIT_Schema_ResourceClass");
 		
 		writePair("name", type.getName());
 		writePair("hasDbTable", hasDbTable);
