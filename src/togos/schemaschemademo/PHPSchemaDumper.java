@@ -121,6 +121,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	
 	protected void writeField( FieldSpec fs ) throws IOException {
 		openObject(schemaClassNamespace+"_Field");
+		writeKey("name"); writeItemValue(fs.getName());
 		writeKey("type");
 		writeDataType(fs.getObjectType());
 		closeObject();
