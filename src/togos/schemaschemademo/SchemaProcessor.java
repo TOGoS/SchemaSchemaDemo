@@ -50,11 +50,13 @@ public class SchemaProcessor
 		"Usage: SchemaProcessor [options] [schema file]\n" +
 		"Options:\n" +
 		"  -o-schema-php <file.php>\n" +
+		"  -php-schema-class-namespace <namespace>\n" +
 		"  -o-db-scripts <dir>\n" +
 		"  -? or -h ; output help text and exit";
 	
 	public static void main( String[] args ) throws Exception {
 		String sourceFilename = "-";
+		String phpSchemaClassNamespace = "TOGoS_Schema";
 		File outputSchemaPhpFile = null;
 		File outputDatabaseScriptDir = null;
 		
@@ -64,6 +66,8 @@ public class SchemaProcessor
 				System.exit(0);
 			} else if( "-o-schema-php".equals(args[i]) ) {
 				outputSchemaPhpFile = new File(args[++i]);
+			} else if( "-php-schema-class-namespace".equals(args[i]) ) {
+				phpSchemaClassNamespace = args[++i];
 			} else if( "-o-db-scripts".equals(args[i]) ) {
 				outputDatabaseScriptDir = new File(args[++i]);
 			} else if( !args[i].startsWith("-") ) {
@@ -143,7 +147,7 @@ public class SchemaProcessor
 			FileUtil.mkParentDirs(outputSchemaPhpFile);
 			
 			final FileWriter phpSchemaWriter = new FileWriter(outputSchemaPhpFile);
-			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter);
+			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter, phpSchemaClassNamespace);
 			tableClassFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
 				@Override public void data(ComplexType value) throws CompileError {
 					try {

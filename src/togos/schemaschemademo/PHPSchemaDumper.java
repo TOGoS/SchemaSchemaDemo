@@ -17,10 +17,12 @@ import togos.schemaschema.namespaces.DataTypeTranslation;
 public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception>
 {
 	protected final TextWriter tw;
+	protected final String schemaClassNamespace;
 	boolean itemWritten = false;
 	
-	public PHPSchemaDumper( Appendable dest ) {
-		tw = new TextWriter(dest);
+	public PHPSchemaDumper( Appendable dest, String schemaClassNamespace ) {
+		this.tw = new TextWriter(dest);
+		this.schemaClassNamespace = schemaClassNamespace;
 	}
 	
 	protected void openArray() throws IOException {
@@ -105,7 +107,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			if( phpType  == null ) jsonType = "string";
 		}
 		
-		openObject("First30_Schema_DataType");
+		openObject(schemaClassNamespace+"_DataType");
 		writeKey("name"); writeItemValue(name);
 		writeKey("sqlTypeName"); writeItemValue(sqlType);
 		writeKey("phpTypeName"); writeItemValue(phpType);
@@ -118,14 +120,14 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	}
 	
 	protected void writeField( FieldSpec fs ) throws IOException {
-		openObject("First30_Schema_Field");
+		openObject(schemaClassNamespace+"_Field");
 		writeKey("type");
 		writeDataType(fs.getObjectType());
 		closeObject();
 	}
 	
 	protected void writeReference( ForeignKeySpec fk ) throws IOException {
-		openObject("First30_Schema_Reference");
+		openObject(schemaClassNamespace+"_Reference");
 		writeKey("targetClassName"); writeItemValue(fk.target.getName());
 		writeKey("originFieldNames"); openArray();
 		for( ForeignKeySpec.Component fkc : fk.components ) {
@@ -141,7 +143,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	}
 	
 	protected void writeIndex( IndexSpec is ) throws IOException {
-		openObject("First30_Schema_Index");
+		openObject(schemaClassNamespace+"_Index");
 		writeKey("field_names"); openArray();
 		for( FieldSpec f : is.fields ) {
 			preItem(); writeItemValue(f.getName());
@@ -157,7 +159,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		boolean membersAreMutable = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_MUTABLE, false);
 		boolean membersArePublic = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_PUBLIC, false);
 		
-		openObject("EarthIT_Schema_ResourceClass");
+		openObject(schemaClassNamespace+"_ResourceClass");
 		
 		writePair("name", type.getName());
 		writePair("hasDbTable", hasDbTable);
@@ -200,7 +202,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			tw.write("// Don't make changes to it directly unless you like your changes being overwritten.\n");
 			tw.write("\n");
 			tw.write("return ");
-			openObject("EarthIT_Schema");
+			openObject(schemaClassNamespace);
 			writeKey("applicationResourceClasses");
 			openArray();
 			opened = true;
