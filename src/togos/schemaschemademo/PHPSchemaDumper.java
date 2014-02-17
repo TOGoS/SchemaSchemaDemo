@@ -203,7 +203,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			tw.write("\n");
 			tw.write("return ");
 			openObject(schemaClassNamespace);
-			writeKey("applicationResourceClasses");
+			writeKey("resourceClasses");
 			openArray();
 			opened = true;
 		}
