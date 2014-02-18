@@ -35,6 +35,11 @@ public class SchemaProcessor
 			return WordUtil.toPascalCase(phrase);
 		}
 	};
+	protected static Function<String,String> POSTGRES_CASIFIER = new Function<String,String>() {
+		@Override public String apply(String phrase) throws RuntimeException {
+			return phrase.toLowerCase().replaceAll("[^a-z0-9]","");
+		}
+	};
 	
 	static class TableClassFilter<E extends Throwable> extends BaseStreamSource<ComplexType, E> implements StreamDestination<SchemaObject, E>
 	{
@@ -52,13 +57,18 @@ public class SchemaProcessor
 		"  -o-schema-php <file.php>\n" +
 		"  -php-schema-class-namespace <namespace>\n" +
 		"  -o-db-scripts <dir>\n" +
+		"  -o-create-tables-script <file>\n" +
+		"  -o-drop-tables-script <file>\n" +
 		"  -? or -h ; output help text and exit";
 	
 	public static void main( String[] args ) throws Exception {
 		String sourceFilename = "-";
 		String phpSchemaClassNamespace = "TOGoS_Schema";
 		File outputSchemaPhpFile = null;
-		File outputDatabaseScriptDir = null;
+		File outputCreateTablesScriptFile = null;
+		File outputDropTablesScriptFile = null;
+		Function<String,String> tableNamer = POSTGRES_CASIFIER;
+		Function<String,String> columnNamer = POSTGRES_CASIFIER;
 		
 		for( int i=0; i<args.length; ++i ) {
 			if( "-?".equals(args[i]) || "-h".equals(args[i]) || "--help".equals(args[i]) ) {
@@ -69,7 +79,13 @@ public class SchemaProcessor
 			} else if( "-php-schema-class-namespace".equals(args[i]) ) {
 				phpSchemaClassNamespace = args[++i];
 			} else if( "-o-db-scripts".equals(args[i]) ) {
-				outputDatabaseScriptDir = new File(args[++i]);
+				File dir = new File(args[++i]);
+				outputCreateTablesScriptFile = new File(dir, "create-tables.sql");
+				outputDropTablesScriptFile = new File(dir, "create-tables.sql");
+			} else if( "-o-create-tables-script".equals(args[i]) ) {
+				outputCreateTablesScriptFile = new File(args[++i]);
+			} else if( "-o-drop-tables-script".equals(args[i]) ) {
+				outputDropTablesScriptFile = new File(args[++i]);
 			} else if( !args[i].startsWith("-") ) {
 				sourceFilename = args[i];
 			} else {
@@ -102,21 +118,15 @@ public class SchemaProcessor
 		
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
 		
-		if( outputDatabaseScriptDir != null ) {
-			if( !outputDatabaseScriptDir.exists() ) outputDatabaseScriptDir.mkdirs();
-			
-			final ArrayList<String> tableList = new ArrayList<String>();
-			final FileWriter createTablesWriter = new FileWriter(new File(outputDatabaseScriptDir, "create-tables.sql"));
+		if( outputCreateTablesScriptFile != null ) {
+			FileUtil.mkParentDirs(outputCreateTablesScriptFile);
+			final FileWriter createTablesWriter = new FileWriter(outputCreateTablesScriptFile);
 			final SQLEmitter createTablesSqlEmitter = new SQLEmitter(createTablesWriter);
-			
-			final FileWriter dropTablesWriter = new FileWriter(new File(outputDatabaseScriptDir, "drop-tables.sql"));
-			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
-			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, PASCAL_CASIFIER, PASCAL_CASIFIER);
+			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, tableNamer, columnNamer);
 			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
 				@Override public void data(TableDefinition td) throws CompileError {
 					try {
 						createTablesSqlEmitter.emitTableCreation(td);
-						tableList.add(td.name);
 					} catch( CompileError e ) {
 						throw e;
 					} catch( Exception e ) {
@@ -126,7 +136,27 @@ public class SchemaProcessor
 				@Override public void end() throws CompileError {
 					try {
 						createTablesWriter.close();
-						
+					} catch( Exception e ) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
+				}
+			});
+			tableClassFilter.pipe(tcsg);
+			didSomething = true;
+		}
+
+		if( outputDropTablesScriptFile != null ) {
+			FileUtil.mkParentDirs(outputDropTablesScriptFile);
+			final ArrayList<String> tableList = new ArrayList<String>();
+			final FileWriter dropTablesWriter = new FileWriter(outputDropTablesScriptFile);
+			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
+			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(dropTablesSqlEmitter, tableNamer, columnNamer);
+			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
+				@Override public void data(TableDefinition td) throws CompileError {
+					tableList.add(td.name);
+				}
+				@Override public void end() throws CompileError {
+					try {
 						Collections.reverse(tableList);
 						for( String tableName : tableList ) {
 							dropTablesSqlEmitter.emitDropTable(tableName);
