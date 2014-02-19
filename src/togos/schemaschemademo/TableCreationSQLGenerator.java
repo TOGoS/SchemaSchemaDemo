@@ -1,5 +1,6 @@
 package togos.schemaschemademo;
 
+import static togos.schemaschema.PropertyUtil.getFirstInheritedBoolean;
 import static togos.schemaschema.PropertyUtil.getFirstInheritedScalar;
 import static togos.schemaschema.PropertyUtil.getFirstInheritedValue;
 import static togos.schemaschema.PropertyUtil.isTrue;
@@ -9,11 +10,14 @@ import java.util.ArrayList;
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
 import togos.codeemitter.sql.SQLEmitter;
+import togos.codeemitter.sql.expr.QueryExpression;
 import togos.codeemitter.structure.Expression;
 import togos.codeemitter.structure.ScalarLiteral;
+import togos.codeemitter.structure.rdb.NextAutoIncrementValueExpression;
 import togos.codeemitter.structure.rdb.ColumnDefinition;
 import togos.codeemitter.structure.rdb.ForeignKeyConstraint;
 import togos.codeemitter.structure.rdb.IndexDefinition;
+import togos.codeemitter.structure.rdb.NextSequenceValueExpression;
 import togos.codeemitter.structure.rdb.TableDefinition;
 import togos.function.Function;
 import togos.lang.CompileError;
@@ -25,6 +29,7 @@ import togos.schemaschema.IndexSpec;
 import togos.schemaschema.SchemaObject;
 import togos.schemaschema.namespaces.Core;
 import togos.schemaschema.namespaces.DataTypeTranslation;
+import togos.schemaschema.namespaces.RDB;
 
 public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition, CompileError> implements StreamDestination<ComplexType, CompileError>
 {
@@ -69,11 +74,21 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 			throw new RuntimeException("Field '"+fs.getName()+"' has no SQL type defined and is not an enum");
 		}
 		
+		Expression defaultValueExpression;
+		SchemaObject sequence;
+		if( (sequence = getFirstInheritedValue(fs, RDB.DEFAULT_VALUE_SEQUENCE, null)) != null ) {
+			defaultValueExpression = new NextSequenceValueExpression(tableNamer.apply(sequence.getName()));
+		} else if( getFirstInheritedBoolean(fs, RDB.IS_AUTO_INCREMENTED, false) ) {
+			defaultValueExpression = NextAutoIncrementValueExpression.INSTANCE;
+		} else {
+			defaultValueExpression = null;
+		}
+		
 		return new ColumnDefinition(
 			columnNamer.apply(fs.getName()),
 			sqlType,
 			isTrue(fs, Core.IS_NULLABLE),
-			null //valueToExpression( getFirstInheritedValue(fs, F30Predicates.DEFAULT) )
+			defaultValueExpression
 		);
 	}
 	

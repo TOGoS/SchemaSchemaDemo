@@ -112,6 +112,8 @@ public class SchemaProcessor
 		
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
+		// TODO: Shouldn't need to do this since 'sequence' is already defined
+		sp.defineCommand("sequence", sp.new ObjectCommandInterpreter(RDB.SEQUENCE));
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineImportCommand(sp);
@@ -119,6 +121,7 @@ public class SchemaProcessor
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
 		
 		if( outputCreateTablesScriptFile != null ) {
+			// TODO: Also output CREATE SEQUENCE stuff
 			FileUtil.mkParentDirs(outputCreateTablesScriptFile);
 			final FileWriter createTablesWriter = new FileWriter(outputCreateTablesScriptFile);
 			final SQLEmitter createTablesSqlEmitter = new SQLEmitter(createTablesWriter);
@@ -144,7 +147,7 @@ public class SchemaProcessor
 			tableClassFilter.pipe(tcsg);
 			didSomething = true;
 		}
-
+		
 		if( outputDropTablesScriptFile != null ) {
 			FileUtil.mkParentDirs(outputDropTablesScriptFile);
 			final ArrayList<String> tableList = new ArrayList<String>();
