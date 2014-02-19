@@ -81,7 +81,7 @@ public class SchemaProcessor
 			} else if( "-o-db-scripts".equals(args[i]) ) {
 				File dir = new File(args[++i]);
 				outputCreateTablesScriptFile = new File(dir, "create-tables.sql");
-				outputDropTablesScriptFile = new File(dir, "create-tables.sql");
+				outputDropTablesScriptFile = new File(dir, "drop-tables.sql");
 			} else if( "-o-create-tables-script".equals(args[i]) ) {
 				outputCreateTablesScriptFile = new File(args[++i]);
 			} else if( "-o-drop-tables-script".equals(args[i]) ) {
