@@ -145,7 +145,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	
 	protected void writeIndex( IndexSpec is ) throws IOException {
 		openObject(schemaClassNamespace+"_Index");
-		writeKey("field_names"); openArray();
+		writeKey("fieldNames"); openArray();
 		for( FieldSpec f : is.fields ) {
 			preItem(); writeItemValue(f.getName());
 		}
