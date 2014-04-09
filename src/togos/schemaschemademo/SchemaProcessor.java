@@ -30,14 +30,9 @@ import togos.schemaschema.parser.SchemaInterpreter;
 
 public class SchemaProcessor
 {
-	protected static Function<String,String> PASCAL_CASIFIER = new Function<String,String>() {
-		@Override public String apply(String phrase) throws RuntimeException {
-			return WordUtil.toPascalCase(phrase);
-		}
-	};
 	protected static Function<String,String> POSTGRES_CASIFIER = new Function<String,String>() {
 		@Override public String apply(String phrase) throws RuntimeException {
-			return phrase.toLowerCase().replaceAll("[^a-z0-9]","");
+			return phrase.replaceAll("_","").replaceAll("::","_").toLowerCase().replaceAll("[^a-z0-9_]","");
 		}
 	};
 	
