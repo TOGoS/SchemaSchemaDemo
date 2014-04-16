@@ -11,7 +11,6 @@ import java.util.Collections;
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
 import togos.codeemitter.FileUtil;
-import togos.codeemitter.WordUtil;
 import togos.codeemitter.sql.SQLEmitter;
 import togos.codeemitter.structure.rdb.TableDefinition;
 import togos.function.Function;
