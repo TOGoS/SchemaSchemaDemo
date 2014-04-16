@@ -84,8 +84,11 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 			defaultValueExpression = null;
 		}
 		
+		String columnName = getFirstInheritedScalar(fs, RDB.NAME_IN_DB, String.class, null);
+		if( columnName == null ) columnName = columnNamer.apply(fs.getName()); 
+		
 		return new ColumnDefinition(
-			columnNamer.apply(fs.getName()),
+			columnName,
 			sqlType,
 			isTrue(fs, Core.IS_NULLABLE),
 			defaultValueExpression
@@ -93,7 +96,10 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 	}
 	
 	protected TableDefinition toTableDefinition( ComplexType ct ) {
-		TableDefinition td = new TableDefinition( tableNamer.apply(ct.getName()) );
+		String tableName = getFirstInheritedScalar(ct, RDB.NAME_IN_DB, String.class, null);
+		if( tableName == null ) tableName = tableNamer.apply(ct.getName()); 
+		
+		TableDefinition td = new TableDefinition( tableName );
 		for( FieldSpec fs : ct.getFields() ) {
 			td.columns.add(toColumnDefinition(fs));
 		}
@@ -118,8 +124,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 				foreignColumnNames.add( columnNamer.apply(c.targetField.getName()) );
 			}
 			td.foreignKeyConstraints.add(new ForeignKeyConstraint(
-				null, localColumnNames,
-				tableNamer.apply(fks.target.getName()), foreignColumnNames
+				null, localColumnNames, tableName, foreignColumnNames
 			));
 		}
 		return td;
