@@ -13,6 +13,7 @@ import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.Type;
 import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.DataTypeTranslation;
+import togos.schemaschema.namespaces.RDB;
 
 public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception>
 {
@@ -120,8 +121,11 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	}
 	
 	protected void writeField( FieldSpec fs ) throws IOException {
+		String columnNameOverride = PropertyUtil.getFirstInheritedScalar(fs, RDB.NAME_IN_DB, String.class, null);
+		
 		openObject(schemaClassNamespace+"_Field");
-		writeKey("name"); writeItemValue(fs.getName());
+		writePair("name", fs.getName());
+		writePair("columnNameOverride", columnNameOverride);
 		writeKey("type");
 		writeDataType(fs.getObjectType());
 		closeObject();
@@ -159,6 +163,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		boolean memberSetIsMutable = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBER_SET_IS_MUTABLE, false);
 		boolean membersAreMutable = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_MUTABLE, false);
 		boolean membersArePublic = PropertyUtil.getFirstInheritedBoolean(type, Application.MEMBERS_ARE_PUBLIC, false);
+		String tableNameOverride = PropertyUtil.getFirstInheritedScalar(type, RDB.NAME_IN_DB, String.class, null);
 		
 		openObject(schemaClassNamespace+"_ResourceClass");
 		
@@ -168,6 +173,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		writePair("memberSetIsMutable", memberSetIsMutable);
 		writePair("membersAreMutable", membersAreMutable);
 		writePair("membersArePublic", membersArePublic);
+		writePair("tableNameOverride", tableNameOverride);
 		
 		writeKey("fields"); openArray();
 		for( FieldSpec fs : type.getFields() ) {
