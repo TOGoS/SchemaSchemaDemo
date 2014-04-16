@@ -10,6 +10,7 @@ import togos.schemaschema.FieldSpec;
 import togos.schemaschema.ForeignKeySpec;
 import togos.schemaschema.IndexSpec;
 import togos.schemaschema.PropertyUtil;
+import togos.schemaschema.SchemaObject;
 import togos.schemaschema.Type;
 import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.DataTypeTranslation;
@@ -174,6 +175,16 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		writePair("membersAreMutable", membersAreMutable);
 		writePair("membersArePublic", membersArePublic);
 		writePair("tableNameOverride", tableNameOverride);
+		writeKey("dbNamespacePath");
+		openArray();
+		SchemaObject namespace = PropertyUtil.getFirstInheritedValue(type, RDB.IN_NAMESPACE, null);
+		if( namespace != null ) {
+			String namespaceName = PropertyUtil.getFirstInheritedScalar(namespace, RDB.NAME_IN_DB, String.class, null);
+			if( namespaceName == null ) namespaceName = namespace.getName().toLowerCase().replaceAll("[^a-z0-9_]","");
+			preItem();
+			writeItemValue(namespaceName);
+		}
+		closeArray();
 		
 		writeKey("fields"); openArray();
 		for( FieldSpec fs : type.getFields() ) {
