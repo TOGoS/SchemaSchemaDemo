@@ -16,6 +16,8 @@ import togos.codeemitter.structure.rdb.TableDefinition;
 import togos.function.Function;
 import togos.lang.BaseSourceLocation;
 import togos.lang.CompileError;
+import togos.lang.ScriptError;
+import togos.lang.SourceLocation;
 import togos.schemaschema.ComplexType;
 import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
@@ -201,7 +203,16 @@ public class SchemaProcessor
 		
 		sp.pipe( tableClassFilter );
 		
-		sp.parse( sourceReader, sourceFilename );
+		try {
+			sp.parse( sourceReader, sourceFilename );
+		} catch( ScriptError e ) {
+			System.err.println("Script error at ");
+			for( SourceLocation sLoc : e.getScriptTrace() ) {
+				System.err.println("  "+BaseSourceLocation.toString(sLoc));
+			}
+			e.printStackTrace();
+			System.exit(1);
+		}
 		
 		if( !didSomething ) {
 			System.err.println("Warning: Didn't do anything.  Maybe you want to -o-<something>");
