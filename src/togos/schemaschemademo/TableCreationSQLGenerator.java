@@ -116,6 +116,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 			}
 		}
 		for( ForeignKeySpec fks : ct.getForeignKeys() ) {
+			String targetTableName = tableNamer.apply(fks.target.getName());
 			ArrayList<String> localColumnNames = new ArrayList<String>();
 			ArrayList<String> foreignColumnNames = new ArrayList<String>();
 			for( ForeignKeySpec.Component c : fks.components ) {
@@ -123,7 +124,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 				foreignColumnNames.add( columnNamer.apply(c.targetField.getName()) );
 			}
 			td.foreignKeyConstraints.add(new ForeignKeyConstraint(
-				null, localColumnNames, tableName, foreignColumnNames
+				null, localColumnNames, targetTableName, foreignColumnNames
 			));
 		}
 		return td;
