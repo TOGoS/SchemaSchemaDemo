@@ -57,7 +57,7 @@ public class SchemaProcessor
 		"  -o-drop-tables-script <file>\n" +
 		"  -? or -h ; output help text and exit";
 	
-	public static void main( String[] args ) throws Exception {
+	public static void _main( String[] args ) throws Exception {
 		String sourceFilename = "-";
 		String phpSchemaClassNamespace = "TOGoS_Schema";
 		File outputSchemaPhpFile = null;
@@ -216,6 +216,15 @@ public class SchemaProcessor
 		
 		if( !didSomething ) {
 			System.err.println("Warning: Didn't do anything.  Maybe you want to -o-<something>");
+		}
+	}
+	
+	public static void main( String[] args ) {
+		try {
+			_main(args);
+		} catch( Exception e ) {
+			e.printStackTrace();
+			System.exit(1);
 		}
 	}
 }
