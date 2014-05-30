@@ -1,6 +1,8 @@
 package togos.schemaschemademo;
 
 import java.io.IOException;
+import java.util.Map;
+import java.util.Set;
 
 import togos.asyncstream.StreamDestination;
 import togos.codeemitter.TextWriter;
@@ -9,6 +11,7 @@ import togos.schemaschema.EnumType;
 import togos.schemaschema.FieldSpec;
 import togos.schemaschema.ForeignKeySpec;
 import togos.schemaschema.IndexSpec;
+import togos.schemaschema.Predicate;
 import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
 import togos.schemaschema.Type;
@@ -118,6 +121,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			writeKey("regex");
 			writeItemValue(regex);
 		}
+		writeKey("properties"); writeSimpleProperties( t );
 		closeObject();
 	}
 	
@@ -127,6 +131,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		openObject(schemaClassNamespace+"_Field");
 		writePair("name", fs.getName());
 		writePair("columnNameOverride", columnNameOverride);
+		writeKey("properties"); writeSimpleProperties( fs );
 		writeKey("type");
 		writeDataType(fs.getObjectType());
 		closeObject();
@@ -158,6 +163,37 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 		closeObject();
 	}
 	
+	protected boolean anyValuesHaveSimpleRepresentations( Set<SchemaObject> schemaObjects ) {
+		for( SchemaObject v : schemaObjects ) {
+			if( v.getScalarValue() != null || v.getLongName() != null ) return true;
+		}
+		return false;
+	}
+	
+	protected void writeSimpleProperties( SchemaObject obj ) throws IOException {
+		openArray();
+		for( Map.Entry<Predicate,Set<SchemaObject>> kv : obj.getProperties().entrySet() ) {
+			if( kv.getKey().getLongName() != null && anyValuesHaveSimpleRepresentations(kv.getValue()) ) {
+				writeKey( kv.getKey().getLongName() );
+				openArray();
+				for( SchemaObject v : kv.getValue() ) {
+					if( v.getScalarValue() != null ) {
+						preItem();
+						writeItemValue( v.getScalarValue() );
+					} else if( v.getLongName() != null ) {
+						preItem();
+						openArray();
+						writeKey("uri");
+						writeItemValue(v.getLongName());
+						closeArray();
+					}
+				}
+				closeArray();
+			}
+		}
+		closeArray();
+	}
+	
 	protected void writeClassSchema( ComplexType type ) throws Exception {
 		boolean hasRestService = PropertyUtil.getFirstInheritedBoolean(type, Application.HAS_REST_SERVICE, false);
 		boolean hasDbTable = PropertyUtil.getFirstInheritedBoolean(type, Application.HAS_DB_TABLE, false);
@@ -185,6 +221,8 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			writeItemValue(namespaceName);
 		}
 		closeArray();
+		
+		writeKey("properties"); writeSimpleProperties( type );
 		
 		writeKey("fields"); openArray();
 		for( FieldSpec fs : type.getFields() ) {
