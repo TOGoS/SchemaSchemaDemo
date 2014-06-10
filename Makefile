@@ -3,6 +3,7 @@ touch = ${tjbuilder} touch
 
 all: \
 	SchemaSchemaDemo.jar \
+	SchemaSchemaDemo.jar.urn \
 	demo-output/db-scripts/create-tables.sql \
 	demo-output/db-scripts/drop-tables.sql \
 	demo-output/schema.php
@@ -21,6 +22,7 @@ save-library-versions:
 	cp ext-lib/SchemaSchema/.git/refs/heads/master ext-lib-refs/SchemaSchema
 
 .PHONY: all clean compile install-libraries save-library-versions .FORCE
+.DELETE_ON_ERROR:
 
 src: .FORCE
 	${touch} -latest-within src -latest-within ext-lib src
@@ -37,6 +39,9 @@ bin: src ext-lib
 
 SchemaSchemaDemo.jar: bin
 	jar cfe "$@" togos.schemaschemademo.SchemaProcessor -C bin .
+
+SchemaSchemaDemo.jar.urn: SchemaSchemaDemo.jar
+	${tjbuilder} id "$<" >"$@"
 
 #### Demo stuff
 
