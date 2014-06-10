@@ -37,6 +37,20 @@ public class SchemaProcessor
 		}
 	};
 	
+	static class ClassClassFilter<C, E extends Throwable> extends BaseStreamSource<C, E> implements StreamDestination<SchemaObject, E>
+	{
+		final Class<C> c;
+		public ClassClassFilter( Class<C> c ) {
+			this.c = c;
+		}
+		
+		@Override public void data(SchemaObject value) throws E {
+			if( c.isInstance(value) ) {
+				_data(c.cast(value));
+			}
+		}
+	}
+	
 	static class TableClassFilter<E extends Throwable> extends BaseStreamSource<ComplexType, E> implements StreamDestination<SchemaObject, E>
 	{
 		@Override
@@ -115,6 +129,7 @@ public class SchemaProcessor
 		CommandInterpreters.defineImportCommand(sp);
 		
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
+		ClassClassFilter<ComplexType, CompileError> complexTypeFilter = new ClassClassFilter<ComplexType, CompileError>(ComplexType.class); 
 		
 		if( outputCreateTablesScriptFile != null ) {
 			// TODO: Also output CREATE SEQUENCE stuff
@@ -177,7 +192,7 @@ public class SchemaProcessor
 			
 			final FileWriter phpSchemaWriter = new FileWriter(outputSchemaPhpFile);
 			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter, phpSchemaClassNamespace);
-			tableClassFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
+			complexTypeFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
 				@Override public void data(ComplexType value) throws CompileError {
 					try {
 						psd.data(value);
@@ -202,6 +217,7 @@ public class SchemaProcessor
 		}
 		
 		sp.pipe( tableClassFilter );
+		sp.pipe( complexTypeFilter );
 		
 		try {
 			sp.parse( sourceReader, sourceFilename );
