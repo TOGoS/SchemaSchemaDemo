@@ -11,18 +11,63 @@ public class RDFXMLEmitterTest extends TestCase
 	XMLEmitter xe;
 	RDFXMLEmitter re;
 	
+	static final String JUNK_NS = "http://ns.example.com/Blah/";
+	
+	static HashMap<String,String> prefixes1 = new HashMap<String,String>();
+	static {
+		prefixes1.put("rdf", RDFXMLEmitter.RDF_NS);
+	}
+
+	static HashMap<String,String> prefixes2 = new HashMap<String,String>();
+	static {
+		prefixes2.put("rdf", RDFXMLEmitter.RDF_NS);
+		prefixes2.put("junk", JUNK_NS);
+	}
+
 	public void setUp() {
-		HashMap<String,String> prefixes = new HashMap<String,String>();
-		prefixes.put("rdf", RDFXMLEmitter.RDF_NS);
-		
 		sb = new StringBuilder();
 		xe = new XMLEmitter(sb);
-		re = new RDFXMLEmitter(xe, prefixes);
 	}
 	
 	public void testEmitEmptyRdfDocument() throws IOException {
+		re = new RDFXMLEmitter(xe, prefixes1);
 		re.openRdf();
 		re.close();
 		assertEquals("<rdf:RDF xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\"/>", sb.toString());
+	}
+	
+	public void testRdfDocumentWithACoupleThings() throws IOException {
+		re = new RDFXMLEmitter(xe, prefixes2);
+		re.openRdf();
+		re.openObject(JUNK_NS+"CornFlake", "#CF1");
+		re.textAttribute(JUNK_NS+"crunchiness", "much");
+		re.close();
+		re.openObject(JUNK_NS+"Bear", "#Winnie");
+		re.textAttribute(JUNK_NS+"name", "Winnie the Pooh");
+		re.refAttribute(JUNK_NS+"favoriteFlake", "#CF1");
+		re.openAttribute(JUNK_NS+"secondFavoriteFlake");
+		re.openObject(JUNK_NS+"CornFlake", null);
+		re.textAttribute(JUNK_NS+"crunchiness", "very");
+		re.close();
+		re.close();
+		re.close();
+		re.close();
+		assertEquals(
+			"<rdf:RDF xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\" xmlns:junk=\""+JUNK_NS+"\">"+
+			"<junk:CornFlake rdf:ID=\"CF1\">"+
+			"<junk:crunchiness>much</junk:crunchiness>"+
+			"</junk:CornFlake>"+
+			"<junk:Bear rdf:ID=\"Winnie\">"+
+			"<junk:name>Winnie the Pooh</junk:name>"+
+			"<junk:favoriteFlake rdf:resource=\"#CF1\"/>"+
+			"<junk:secondFavoriteFlake>"+
+			"<junk:CornFlake>"+
+			"<junk:crunchiness>very</junk:crunchiness>"+
+			"</junk:CornFlake>"+
+			"</junk:secondFavoriteFlake>"+
+			"</junk:Bear>"+
+			"</rdf:RDF>",
+			sb.toString()
+		);
 	}
 }
