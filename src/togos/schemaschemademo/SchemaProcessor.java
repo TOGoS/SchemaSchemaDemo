@@ -65,6 +65,7 @@ public class SchemaProcessor
 		"Usage: SchemaProcessor [options] [schema file]\n" +
 		"Options:\n" +
 		"  -o-schema-php <file.php>\n" +
+		"  -o-schema-rdf <file.rdf>\n" +
 		"  -php-schema-class-namespace <namespace>\n" +
 		"  -o-db-scripts <dir>\n" +
 		"  -o-create-tables-script <file>\n" +
@@ -75,6 +76,8 @@ public class SchemaProcessor
 		String sourceFilename = "-";
 		String phpSchemaClassNamespace = "TOGoS_Schema";
 		File outputSchemaPhpFile = null;
+		// TODO: actually do something with this
+		File outputSchemaRdfFile = null;
 		File outputCreateTablesScriptFile = null;
 		File outputDropTablesScriptFile = null;
 		Function<String,String> tableNamer = POSTGRES_CASIFIER;
@@ -86,6 +89,8 @@ public class SchemaProcessor
 				System.exit(0);
 			} else if( "-o-schema-php".equals(args[i]) ) {
 				outputSchemaPhpFile = new File(args[++i]);
+			} else if( "-o-schema-rdf".equals(args[i]) ) {
+				outputSchemaRdfFile = new File(args[++i]);
 			} else if( "-php-schema-class-namespace".equals(args[i]) ) {
 				phpSchemaClassNamespace = args[++i];
 			} else if( "-o-db-scripts".equals(args[i]) ) {
