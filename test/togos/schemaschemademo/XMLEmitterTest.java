@@ -35,4 +35,11 @@ public class XMLEmitterTest extends TestCase
 		emitter.close();
 		assertEquals("<xxx:foobar yyy:cans=\"yes\" zzz:bans=\"no\">Hi<parts/>Bye</xxx:foobar>", sb.toString());
 	}
+	
+	public void testEmitStuffThatNeedsEscaping() throws IOException {
+		emitter.open("xxx:foobar", XMLEmitter.attrList("escapeThis","<\"&\">"), false);
+		emitter.text("<\"&\">");
+		emitter.close();
+		assertEquals("<xxx:foobar escapeThis=\"&lt;&quot;&amp;&quot;&gt;\">&lt;\"&amp;\"&gt;</xxx:foobar>", sb.toString());
+	}
 }
