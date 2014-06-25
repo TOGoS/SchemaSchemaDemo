@@ -16,6 +16,8 @@ public class RDFXMLEmitter
 	/** Map of short name (thing before colon) -> long name (usually a URL prefix) */
 	protected final Map<String,String> namepacePrefixes;
 	protected int xmlnsEmitted = -1;
+	int indent = 0;
+	boolean autoFormat = true;
 	
 	public RDFXMLEmitter( XMLEmitter xe, Map<String,String> namespacePrefixes ) {
 		this.xe = xe;
@@ -46,11 +48,21 @@ public class RDFXMLEmitter
 		for( Attribute ra : attrs ) {
 			xmlAttrs.add(new Attribute(abbreviate(ra.name), ra.value));
 		}
+		if( autoFormat && indent > 0 ) {
+			xe.text("\n");
+			for( int i=0; i<indent; ++i ) xe.text("\t");
+		}
 		xe.open(tagName, xmlAttrs, false);
 		++xmlnsEmitted;
+		++indent;
 	}
 	
 	protected void close() throws IOException {
+		--indent;
+		if( autoFormat && xe.state != XMLEmitter.State.OPENING ) {
+			xe.text("\n");
+			for( int i=0; i<indent; ++i ) xe.text("\t");
+		}
 		xe.close();
 		--xmlnsEmitted;
 	}
@@ -73,7 +85,9 @@ public class RDFXMLEmitter
 	public void textAttribute(String predicateUri, String text) throws IOException {
 		open(predicateUri, XMLEmitter.attrList());
 		xe.text(text);
+		autoFormat = false;
 		close();
+		autoFormat = true;
 	}
 	
 	public void refAttribute(String predicateUri, String uri) throws IOException {

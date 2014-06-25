@@ -53,19 +53,19 @@ public class RDFXMLEmitterTest extends TestCase
 		re.close();
 		re.close();
 		assertEquals(
-			"<rdf:RDF xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\" xmlns:junk=\""+JUNK_NS+"\">"+
-			"<junk:CornFlake rdf:ID=\"CF1\">"+
-			"<junk:crunchiness>much</junk:crunchiness>"+
-			"</junk:CornFlake>"+
-			"<junk:Bear rdf:ID=\"Winnie\">"+
-			"<junk:name>Winnie the Pooh</junk:name>"+
-			"<junk:favoriteFlake rdf:resource=\"#CF1\"/>"+
-			"<junk:secondFavoriteFlake>"+
-			"<junk:CornFlake>"+
-			"<junk:crunchiness>very</junk:crunchiness>"+
-			"</junk:CornFlake>"+
-			"</junk:secondFavoriteFlake>"+
-			"</junk:Bear>"+
+			"<rdf:RDF xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\" xmlns:junk=\""+JUNK_NS+"\">\n"+
+			"\t<junk:CornFlake rdf:ID=\"CF1\">\n"+
+			"\t\t<junk:crunchiness>much</junk:crunchiness>\n"+
+			"\t</junk:CornFlake>\n"+
+			"\t<junk:Bear rdf:ID=\"Winnie\">\n"+
+			"\t\t<junk:name>Winnie the Pooh</junk:name>\n"+
+			"\t\t<junk:favoriteFlake rdf:resource=\"#CF1\"/>\n"+
+			"\t\t<junk:secondFavoriteFlake>\n"+
+			"\t\t\t<junk:CornFlake>\n"+
+			"\t\t\t\t<junk:crunchiness>very</junk:crunchiness>\n"+
+			"\t\t\t</junk:CornFlake>\n"+
+			"\t\t</junk:secondFavoriteFlake>\n"+
+			"\t</junk:Bear>\n"+
 			"</rdf:RDF>",
 			sb.toString()
 		);
