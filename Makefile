@@ -6,6 +6,7 @@ all: \
 	SchemaSchemaDemo.jar.urn \
 	demo-output/db-scripts/create-tables.sql \
 	demo-output/db-scripts/drop-tables.sql \
+	demo-output/schema.rdf \
 	demo-output/schema.php
 
 clean:
@@ -50,6 +51,9 @@ demo-output/db-scripts/create-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
 
 demo-output/db-scripts/drop-tables.sql: SchemaSchemaDemo.jar demo-schema.txt
 	java -jar SchemaSchemaDemo.jar -o-db-scripts demo-output/db-scripts demo-schema.txt
+
+demo-output/schema.rdf: SchemaSchemaDemo.jar demo-schema.txt
+	java -jar SchemaSchemaDemo.jar -o-schema-rdf demo-output/demo-schema.rdf demo-schema.txt
 
 demo-output/schema.php: SchemaSchemaDemo.jar demo-schema.txt
 	java -jar SchemaSchemaDemo.jar -o-schema-php demo-output/demo-schema.php demo-schema.txt

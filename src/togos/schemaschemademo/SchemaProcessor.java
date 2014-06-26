@@ -3,6 +3,7 @@ package togos.schemaschemademo;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -189,6 +190,31 @@ public class SchemaProcessor
 				}
 			});
 			tableClassFilter.pipe(tcsg);
+			didSomething = true;
+		}
+		
+		if( outputSchemaRdfFile != null ) {
+			FileUtil.mkParentDirs(outputSchemaRdfFile);
+			
+			final FileWriter rdfSchemaWriter = new FileWriter(outputSchemaRdfFile);
+			final SchemaRDFGenerator srg = new SchemaRDFGenerator(rdfSchemaWriter);
+			sp.pipe(new StreamDestination<SchemaObject, CompileError>() {
+				@Override public void data(SchemaObject value) throws CompileError {
+					try {
+						srg.data(value);
+					} catch (IOException e) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
+				}
+				@Override public void end() throws CompileError {
+					try {
+						srg.end();
+						rdfSchemaWriter.close();
+					} catch (IOException e) {
+						throw new CompileError(e, BaseSourceLocation.NONE);
+					}
+				}
+			});
 			didSomething = true;
 		}
 		

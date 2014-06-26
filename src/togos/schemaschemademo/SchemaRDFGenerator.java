@@ -2,23 +2,33 @@ package togos.schemaschemademo;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 import togos.asyncstream.StreamDestination;
-import togos.lang.BaseSourceLocation;
-import togos.lang.CompileError;
+import togos.codeemitter.WordUtil;
 import togos.schemaschema.Predicate;
 import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
+import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.Core;
+import togos.schemaschema.namespaces.DataTypeTranslation;
+import togos.schemaschema.namespaces.RDB;
+import togos.schemaschema.namespaces.Types;
 
-public class SchemaRDFGenerator implements StreamDestination<SchemaObject, CompileError>
+public class SchemaRDFGenerator implements StreamDestination<SchemaObject, Exception>
 {
 	protected final RDFXMLEmitter re;
 	public SchemaRDFGenerator(Appendable dest) {
 		HashMap<String,String> namespacePrefixes = new HashMap<String,String>();
-		namespacePrefixes.put("rdf", RDFXMLEmitter.RDF_NS);
+		namespacePrefixes.put("rdf", Core.RDF_NS.prefix);
+		namespacePrefixes.put("rdfs", Core.RDFS_NS.prefix);
+		namespacePrefixes.put("schema", Core.NS.prefix);
+		namespacePrefixes.put("types", Types.NS.prefix);
+		namespacePrefixes.put("rdb", RDB.NS.prefix);
+		namespacePrefixes.put("app", Application.NS.prefix);
+		namespacePrefixes.put("dtx", DataTypeTranslation.NS.prefix);
 		this.re = new RDFXMLEmitter(new XMLEmitter(dest), namespacePrefixes);
 	}
 
@@ -31,27 +41,62 @@ public class SchemaRDFGenerator implements StreamDestination<SchemaObject, Compi
 		}
 	}
 	
-	protected String getRef(SchemaObject obj) {
-		return obj.getLongName();
+	protected HashMap<SchemaObject,String> generatedRefs = new HashMap<SchemaObject,String>();
+	protected HashSet<String> usedRefs = new HashSet<String>();
+	
+	protected String maybeGetRef(SchemaObject obj) {
+		String ref = obj.getLongName();
+		if( ref == null ) ref = generatedRefs.get(obj);
+		return ref;
 	}
 	
+	protected String getRef(SchemaObject obj) {
+		String ref = obj.getLongName();
+		if( ref == null ) ref = generatedRefs.get(obj);
+		if( ref == null ) {
+			throw new RuntimeException("'"+obj.getName()+"' has no long name");
+		}
+		return ref;
+	}
+	
+	protected String getOrGenerateRef(SchemaObject obj) {
+		String ref = generatedRefs.get(obj);
+		if( ref == null ) {
+			ref = obj.getLongName();
+			if( ref == null ) {
+				ref = obj.getName() == null ? "#x" :
+					obj instanceof Predicate ? "#"+WordUtil.toCamelCase(obj.getName()) :
+						"#"+WordUtil.toPascalCase(obj.getName());
+				if( usedRefs.contains(ref) ) { 
+					String pfx = ref;
+					int d = 2;
+					while( usedRefs.contains(ref = pfx+d) ) ++d;
+				}
+			}
+			usedRefs.add(ref);
+			generatedRefs.put(obj, ref);
+		}
+		return ref;
+	}
+
 	protected void emitAttribute(Predicate pred, SchemaObject obj) throws IOException {
 		if( obj.hasScalarValue() ) {
 			re.textAttribute(getRef(pred), obj.getScalarValue().toString());
-		}
-		String ref = getRef(obj);
-		if( ref != null ) {
-			re.refAttribute(getRef(pred), ref);
 		} else {
-			re.openAttribute(getRef(pred));
-			emitReference(obj);
-			re.close();
+			String ref = maybeGetRef(obj);
+			if( ref != null ) {
+				re.refAttribute(getRef(pred), ref);
+			} else {
+				re.openAttribute(getRef(pred));
+				emitPrimary(obj);
+				re.close();
+			}
 		}
 	}
 	
 	protected void emitPrimary(SchemaObject obj) throws IOException {
 		SchemaObject type = PropertyUtil.getFirstInheritedValue(obj, Core.TYPE, null);
-		re.openObject(type == null ? RDFXMLEmitter.RDF_NS+"Description" : getRef(type), getRef(obj));
+		re.openObject(type == null ? RDFXMLEmitter.RDF_NS+"Description" : getRef(type), getOrGenerateRef(obj));
 		for( Map.Entry<Predicate,Set<SchemaObject>> pe : obj.getProperties().entrySet() ) {
 			if( pe.getKey() == Core.TYPE ) continue;
 			if( pe.getKey() == Core.LONGNAME ) continue;
@@ -67,22 +112,14 @@ public class SchemaRDFGenerator implements StreamDestination<SchemaObject, Compi
 		emitPrimary(obj);
 	}
 	
-	@Override public void data(SchemaObject value) throws CompileError {
-		try {
-			ensureOpened();
-			emitPrimary(value);
-		} catch( IOException e ) {
-			throw new CompileError(e, value.getSourceLocation());
-		}
+	@Override public void data(SchemaObject value) throws IOException {
+		ensureOpened();
+		emitPrimary(value);
 	}
 
-	@Override public void end() throws CompileError {
-		try {
-			ensureOpened();
-			re.close();
-		} catch( IOException e ) {
-			throw new CompileError(e, BaseSourceLocation.NONE);
-		}
+	@Override public void end() throws IOException {
+		ensureOpened();
+		re.close();
 	}
 
 }

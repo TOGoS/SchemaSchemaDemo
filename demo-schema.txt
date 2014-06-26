@@ -10,7 +10,7 @@ import 'http://ns.nuke24.net/Schema/RDB/nameInDatabase'
 import 'http://ns.nuke24.net/Schema/RDB/isInNamespace'
 import 'http://ns.nuke24.net/Schema/RDB/defaultValueSequence'
 
-sequence 'entity IDs' : initial value @ 1001
+sequence 'entity ID sequence' : initial value @ 1001
 
 class 'integer' :
 	SQL type @ "INT" :
@@ -37,7 +37,7 @@ class modifier 'SRR' =
 	members are public :
 	is in namespace @ demo schema
 
-field modifier 'EIPK' = entity ID : key(primary) : default value sequence @ entity IDs
+field modifier 'EIPK' = entity ID : key(primary) : default value sequence @ entity ID sequence
 
 enum mood {
 	'ugh!'

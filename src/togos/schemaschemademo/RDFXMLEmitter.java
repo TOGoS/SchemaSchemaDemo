@@ -6,11 +6,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import togos.schemaschema.namespaces.Core;
 import togos.schemaschemademo.XMLEmitter.Attribute;
 
 public class RDFXMLEmitter
 {
-	public static final String RDF_NS = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+	public static final String RDF_NS = Core.RDF_NS.prefix;
 	
 	protected final XMLEmitter xe;
 	/** Map of short name (thing before colon) -> long name (usually a URL prefix) */
@@ -27,6 +28,7 @@ public class RDFXMLEmitter
 	static final Pattern NICE = Pattern.compile("^[a-z0-9_\\-]+$", Pattern.CASE_INSENSITIVE);
 	
 	protected String abbreviate(String uri) {
+		assert uri != null;
 		for( Map.Entry<String,String> e : namepacePrefixes.entrySet() ) {
 			String prefix = e.getValue();
 			if( !uri.startsWith(prefix) ) continue;
