@@ -11,24 +11,12 @@ import togos.codeemitter.WordUtil;
 import togos.schemaschema.Predicate;
 import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
-import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.Core;
-import togos.schemaschema.namespaces.DataTypeTranslation;
-import togos.schemaschema.namespaces.RDB;
-import togos.schemaschema.namespaces.Types;
 
 public class SchemaRDFGenerator implements StreamDestination<SchemaObject, Exception>
 {
 	protected final RDFXMLEmitter re;
-	public SchemaRDFGenerator(Appendable dest) {
-		HashMap<String,String> namespacePrefixes = new HashMap<String,String>();
-		namespacePrefixes.put("rdf", Core.RDF_NS.prefix);
-		namespacePrefixes.put("rdfs", Core.RDFS_NS.prefix);
-		namespacePrefixes.put("schema", Core.NS.prefix);
-		namespacePrefixes.put("types", Types.NS.prefix);
-		namespacePrefixes.put("rdb", RDB.NS.prefix);
-		namespacePrefixes.put("app", Application.NS.prefix);
-		namespacePrefixes.put("dtx", DataTypeTranslation.NS.prefix);
+	public SchemaRDFGenerator(Appendable dest, Map<String,String> namespacePrefixes) {
 		this.re = new RDFXMLEmitter(new XMLEmitter(dest), namespacePrefixes);
 	}
 

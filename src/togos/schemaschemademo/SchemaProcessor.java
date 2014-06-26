@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
@@ -84,10 +85,23 @@ public class SchemaProcessor
 		Function<String,String> tableNamer = POSTGRES_CASIFIER;
 		Function<String,String> columnNamer = POSTGRES_CASIFIER;
 		
+		HashMap<String,String> namespacePrefixes = new HashMap<String,String>();
+		namespacePrefixes.put("rdf", Core.RDF_NS.prefix);
+		namespacePrefixes.put("rdfs", Core.RDFS_NS.prefix);
+		namespacePrefixes.put("schema", Core.NS.prefix);
+		namespacePrefixes.put("types", Types.NS.prefix);
+		namespacePrefixes.put("rdb", RDB.NS.prefix);
+		namespacePrefixes.put("app", Application.NS.prefix);
+		namespacePrefixes.put("dtx", DataTypeTranslation.NS.prefix);
+		
 		for( int i=0; i<args.length; ++i ) {
 			if( "-?".equals(args[i]) || "-h".equals(args[i]) || "--help".equals(args[i]) ) {
 				System.out.println(USAGE_TEXT);
 				System.exit(0);
+			} else if( "-namespace-abbreviation".equals(args[i]) ) {
+				String abbreviation = args[++i];
+				String prefix = args[++i];
+				namespacePrefixes.put(abbreviation, prefix);
 			} else if( "-o-schema-php".equals(args[i]) ) {
 				outputSchemaPhpFile = new File(args[++i]);
 			} else if( "-o-schema-rdf".equals(args[i]) ) {
@@ -197,7 +211,7 @@ public class SchemaProcessor
 			FileUtil.mkParentDirs(outputSchemaRdfFile);
 			
 			final FileWriter rdfSchemaWriter = new FileWriter(outputSchemaRdfFile);
-			final SchemaRDFGenerator srg = new SchemaRDFGenerator(rdfSchemaWriter);
+			final SchemaRDFGenerator srg = new SchemaRDFGenerator(rdfSchemaWriter, namespacePrefixes);
 			sp.pipe(new StreamDestination<SchemaObject, CompileError>() {
 				@Override public void data(SchemaObject value) throws CompileError {
 					try {
