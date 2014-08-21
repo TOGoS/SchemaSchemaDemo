@@ -136,6 +136,7 @@ public class SchemaProcessor
 		sp.defineImportable( Core.NS );
 		sp.defineImportable( Core.RDF_NS );
 		sp.defineImportable( Core.RDFS_NS );
+		sp.defineImportable( Core.SCHEMA_NS );
 		sp.defineImportable( DataTypeTranslation.NS );
 		sp.defineImportable( RDB.NS );
 		sp.defineImportable( Types.NS );

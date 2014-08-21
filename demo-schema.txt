@@ -2,6 +2,8 @@ import everything from 'http://ns.nuke24.net/Schema/'
 import everything from 'http://ns.nuke24.net/Schema/DataTypeTranslation/'
 import everything from 'http://ns.nuke24.net/Schema/Application/'
 
+import 'http://schema.org/True' as 'true'
+import 'http://schema.org/False' as 'false'
 import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
 import 'http://ns.nuke24.net/Schema/RDB/Sequence'
 import 'http://ns.nuke24.net/Schema/RDB/Schema'
@@ -57,6 +59,11 @@ class 'resource' : SRR {
 class 'person' : SRR {
 	ID : EIPK
 	name : string
+	# Demonstrate a field that does not have a corresponding
+	# database column (default assumption for fields of
+	# table-mapped classes is that they do have one):
+	ziggurat : string : has a database column @ false :
+		comment @ "A dummy column which exists solely for demonstrative porpoises."
 }
 
 class 'rating' : SRR : name in database @ "los_ratingos" {
