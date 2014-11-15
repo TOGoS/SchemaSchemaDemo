@@ -182,19 +182,19 @@ public class SchemaProcessor
 		
 		if( outputDropTablesScriptFile != null ) {
 			FileUtil.mkParentDirs(outputDropTablesScriptFile);
-			final ArrayList<String> tableList = new ArrayList<String>();
+			final ArrayList<String[]> tableList = new ArrayList<String[]>();
 			final FileWriter dropTablesWriter = new FileWriter(outputDropTablesScriptFile);
 			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
 			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(dropTablesSqlEmitter, tableNamer, columnNamer);
 			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
 				@Override public void data(TableDefinition td) throws CompileError {
-					tableList.add(td.name);
+					tableList.add(td.path);
 				}
 				@Override public void end() throws CompileError {
 					try {
 						Collections.reverse(tableList);
-						for( String tableName : tableList ) {
-							dropTablesSqlEmitter.emitDropTable(tableName);
+						for( String[] tablePath: tableList ) {
+							dropTablesSqlEmitter.emitDropTable(tablePath);
 						}
 						dropTablesWriter.close();
 					} catch( CompileError e ) {

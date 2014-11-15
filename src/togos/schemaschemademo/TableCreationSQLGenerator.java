@@ -42,6 +42,22 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 		this.columnNamer = columnNamer;
 	}
 	
+	protected String shortDbName( SchemaObject obj ) {
+		String objName = getFirstInheritedScalar(obj, RDB.NAME_IN_DB, String.class, null);
+		return objName == null ? tableNamer.apply(obj.getName()) : objName;
+	}
+	
+	/**
+	 * @return "namespace.object" or "object" (if no namespace)
+	 */
+	protected String[] longDbName( SchemaObject obj ) {
+		String objName = shortDbName(obj);
+		
+		SchemaObject namespace = getFirstInheritedValue(obj, RDB.IN_NAMESPACE, null);
+		
+		return namespace == null ? new String[]{ objName } : new String[]{ shortDbName(namespace), objName };
+	}
+	
 	protected Expression valueToExpression( SchemaObject obj ) {
 		return new ScalarLiteral(obj.getScalarValue(), obj.getSourceLocation());
 	}
@@ -76,7 +92,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 		Expression defaultValueExpression;
 		SchemaObject sequence;
 		if( (sequence = getFirstInheritedValue(fs, RDB.DEFAULT_VALUE_SEQUENCE, null)) != null ) {
-			defaultValueExpression = new NextSequenceValueExpression(tableNamer.apply(sequence.getName()));
+			defaultValueExpression = new NextSequenceValueExpression(longDbName(sequence));
 		} else if( getFirstInheritedBoolean(fs, RDB.IS_AUTO_INCREMENTED, false) ) {
 			defaultValueExpression = NextAutoIncrementValueExpression.INSTANCE;
 		} else {
@@ -95,8 +111,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 	}
 	
 	protected TableDefinition toTableDefinition( ComplexType ct ) {
-		String tableName = getFirstInheritedScalar(ct, RDB.NAME_IN_DB, String.class, null);
-		if( tableName == null ) tableName = tableNamer.apply(ct.getName()); 
+		String[] tableName = longDbName(ct);
 		
 		TableDefinition td = new TableDefinition( tableName );
 		for( FieldSpec fs : ct.getFields() ) {
@@ -116,7 +131,7 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 			}
 		}
 		for( ForeignKeySpec fks : ct.getForeignKeys() ) {
-			String targetTableName = tableNamer.apply(fks.target.getName());
+			String[] targetTableName = longDbName(fks.target);
 			ArrayList<String> localColumnNames = new ArrayList<String>();
 			ArrayList<String> foreignColumnNames = new ArrayList<String>();
 			for( ForeignKeySpec.Component c : fks.components ) {
