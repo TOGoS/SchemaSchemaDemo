@@ -54,6 +54,7 @@ enum mood {
 class 'resource' : SRR {
 	ID : EIPK
 	URN : string
+	type : enum(audio, video, image, document)
 }
 
 class 'person' : SRR {

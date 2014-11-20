@@ -143,7 +143,8 @@ public class SchemaProcessor
 		
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
-		// TODO: Shouldn't need to do this since 'sequence' is already defined
+		sp.defineFieldModifier("enum", new SchemaInterpreter.EnumModifierSpec(Core.VALUE_TYPE) );
+		// TODO: Shouldn't need to do this since the 'sequence' type is already defined
 		sp.defineCommand("sequence", sp.new ObjectCommandInterpreter(RDB.SEQUENCE));
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
