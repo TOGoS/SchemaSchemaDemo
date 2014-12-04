@@ -65,8 +65,14 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 	protected ColumnDefinition toColumnDefinition( FieldSpec fs ) {
 		SchemaObject objectType = getFirstInheritedValue( fs, Core.VALUE_TYPE );
 		
-		String sqlType;
-		if( isTrue( objectType, Core.IS_ENUM_TYPE ) ) {
+		String sqlType = getFirstInheritedScalar(
+			objectType,
+			DataTypeTranslation.SQL_TYPE,
+			String.class,
+			null
+		);
+		if( sqlType == null && isTrue( objectType, Core.IS_ENUM_TYPE ) ) {
+			// TODO: Not all databases (e.g. Postgres) support inline ENUM types.
 			// TODO: Shouldn't require it to actually be an EnumType object;
 			// valid values should be represented as properties.
 			EnumType enumType = (EnumType)objectType;
@@ -76,13 +82,6 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 				sqlType += sqlEmitter.quoteText(name);
 			}
 			sqlType = "ENUM(" + sqlType + ")";
-		} else {
-			sqlType = getFirstInheritedScalar(
-				objectType,
-				DataTypeTranslation.SQL_TYPE,
-				String.class,
-				null
-			);
 		}
 		
 		if( sqlType == null ) {
