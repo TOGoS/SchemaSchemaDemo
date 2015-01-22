@@ -139,6 +139,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	
 	protected void writeReference( ForeignKeySpec fk ) throws IOException {
 		openObject(schemaClassNamespace+"_Reference");
+		writePair("name", fk.getName());
 		writeKey("targetClassName"); writeItemValue(fk.target.getName());
 		writeKey("originFieldNames"); openArray();
 		for( ForeignKeySpec.Component fkc : fk.components ) {
