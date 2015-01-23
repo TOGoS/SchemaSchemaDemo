@@ -16,6 +16,7 @@ import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
 import togos.schemaschema.Type;
 import togos.schemaschema.namespaces.Application;
+import togos.schemaschema.namespaces.Core;
 import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.RDB;
 
@@ -126,11 +127,13 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 	}
 	
 	protected void writeField( FieldSpec fs ) throws IOException {
+		boolean isNullable = PropertyUtil.getFirstInheritedBoolean(fs, Core.IS_NULLABLE, false);
 		String columnNameOverride = PropertyUtil.getFirstInheritedScalar(fs, RDB.NAME_IN_DB, String.class, null);
 		
 		openObject(schemaClassNamespace+"_Field");
 		writePair("name", fs.getName());
 		writePair("columnNameOverride", columnNameOverride);
+		writePair("isNullable", isNullable);
 		writeKey("properties"); writeSimpleProperties( fs );
 		writeKey("type");
 		writeDataType(fs.getObjectType());
