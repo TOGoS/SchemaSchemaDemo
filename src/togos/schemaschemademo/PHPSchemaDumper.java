@@ -154,6 +154,7 @@ public class PHPSchemaDumper implements StreamDestination<ComplexType, Exception
 			preItem(); writeItemValue(fkc.targetField.getName());
 		}
 		closeArray();
+		writeKey("properties"); writeSimpleProperties( fk );
 		closeObject();
 	}
 	
