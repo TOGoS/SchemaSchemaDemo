@@ -26,6 +26,7 @@ import togos.schemaschema.FieldSpec;
 import togos.schemaschema.ForeignKeySpec;
 import togos.schemaschema.IndexSpec;
 import togos.schemaschema.SchemaObject;
+import togos.schemaschema.namespaces.Application;
 import togos.schemaschema.namespaces.Core;
 import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.RDB;
@@ -114,7 +115,9 @@ public class TableCreationSQLGenerator extends BaseStreamSource<TableDefinition,
 		
 		TableDefinition td = new TableDefinition( tableName );
 		for( FieldSpec fs : ct.getFields() ) {
-			td.columns.add(toColumnDefinition(fs));
+			if( getFirstInheritedBoolean(fs, Application.HAS_DB_COLUMN, !getFirstInheritedBoolean(fs, Application.IS_FAKE_FIELD, false)) ) {
+				td.columns.add(toColumnDefinition(fs));
+			}
 		}
 		for( IndexSpec is : ct.getIndexes() ) {
 			ArrayList<String> indexColumnNames = new ArrayList<String>();
