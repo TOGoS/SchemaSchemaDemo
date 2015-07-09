@@ -12,6 +12,7 @@ import java.util.HashMap;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
+import togos.asyncstream.StreamUtil;
 import togos.codeemitter.FileUtil;
 import togos.codeemitter.sql.SQLEmitter;
 import togos.codeemitter.structure.rdb.TableDefinition;
@@ -29,7 +30,9 @@ import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.RDB;
 import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
+import togos.schemaschema.parser.Parser;
 import togos.schemaschema.parser.SchemaInterpreter;
+import togos.schemaschema.parser.Tokenizer;
 
 public class SchemaProcessor
 {
@@ -75,7 +78,7 @@ public class SchemaProcessor
 		"  -? or -h ; output help text and exit";
 	
 	public static void _main( String[] args ) throws Exception {
-		String sourceFilename = "-";
+		ArrayList<String> sourceFilenames = new ArrayList<String>(); 
 		String phpSchemaClassNamespace = "TOGoS_Schema";
 		File outputSchemaPhpFile = null;
 		// TODO: actually do something with this
@@ -117,7 +120,7 @@ public class SchemaProcessor
 			} else if( "-o-drop-tables-script".equals(args[i]) ) {
 				outputDropTablesScriptFile = new File(args[++i]);
 			} else if( !args[i].startsWith("-") ) {
-				sourceFilename = args[i];
+				sourceFilenames.add(args[i]);
 			} else {
 				System.err.println("Unrecognized argument: "+args[i]);
 				System.err.println(USAGE_TEXT);
@@ -126,10 +129,6 @@ public class SchemaProcessor
 		}
 		
 		boolean didSomething = false;
-		
-		Reader sourceReader = "-".equals(sourceFilename) ?
-			new InputStreamReader(System.in) :
-			new FileReader(sourceFilename);
 		
 		SchemaInterpreter sp = new SchemaInterpreter();
 		sp.defineImportable( Application.NS );
@@ -266,17 +265,46 @@ public class SchemaProcessor
 		sp.pipe( tableClassFilter );
 		sp.pipe( complexTypeFilter );
 		
-		try {
-			sp.parse( sourceReader, sourceFilename );
-		} catch( ScriptError e ) {
-			System.err.println("Script error at ");
-			for( SourceLocation sLoc : e.getScriptTrace() ) {
-				System.err.println("  "+BaseSourceLocation.toString(sLoc));
-			}
-			e.printStackTrace();
-			System.exit(1);
-		}
+		// Since we're potentially parsing multiple files,
+		// we need to set up our own tokenizer and parser.
 		
+		Parser p = new Parser();
+		p.pipe(sp);
+		
+		Tokenizer t = new Tokenizer();
+		t.pipe(p);
+		
+		for( String sourceFilename : sourceFilenames ) {
+			boolean isStdin = "-".equals(sourceFilename);
+			Reader sourceReader = isStdin ?
+				new InputStreamReader(System.in) :
+				new FileReader(sourceFilename);
+			
+			try {
+				t.setSourceLocation( sourceFilename, 1, 1 );
+				try {
+					StreamUtil.pipe( sourceReader, t, false );
+				} catch( CompileError e ) {
+					throw e;
+				} catch( IOException e ) {
+					throw new RuntimeException(e);
+				}
+			} catch( ScriptError e ) {
+				System.err.println("Script error at ");
+				for( SourceLocation sLoc : e.getScriptTrace() ) {
+					System.err.println("  "+BaseSourceLocation.toString(sLoc));
+				}
+				e.printStackTrace();
+				System.exit(1);
+			} finally {
+				if( !isStdin ) sourceReader.close();
+			}
+		}
+		t.end();
+		
+		if( sourceFilenames.size() == 0 ) {
+			System.err.println("Warning: Read no inputs.  Maybe you want to read from stdin by specifying '-'?");
+		}
 		if( !didSomething ) {
 			System.err.println("Warning: Didn't do anything.  Maybe you want to -o-<something>");
 		}
