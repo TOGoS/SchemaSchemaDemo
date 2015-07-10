@@ -22,6 +22,7 @@ import togos.lang.CompileError;
 import togos.lang.ScriptError;
 import togos.lang.SourceLocation;
 import togos.schemaschema.ComplexType;
+import togos.schemaschema.Namespace;
 import togos.schemaschema.PropertyUtil;
 import togos.schemaschema.SchemaObject;
 import togos.schemaschema.namespaces.Application;
@@ -66,6 +67,33 @@ public class SchemaProcessor
 		}
 	}
 	
+	protected static void dumpNamespaces(Namespace ns, ArrayList<String> summaryLines) {
+		for( Object obj : ns.items.values() ) {
+			if( obj instanceof SchemaObject ) {
+				SchemaObject sobj = (SchemaObject)obj;
+				if( sobj.getLongName() != null ) {
+					String commentString = "";
+					for( SchemaObject co : PropertyUtil.getAllInheritedValues(sobj, Core.COMMENT) ) {
+						if( commentString == "" ) commentString = " ; ";
+						commentString += co.getScalarValue();
+					}
+					summaryLines.add(sobj.getLongName()+commentString);
+				}
+			}
+		}
+		
+		for( Namespace contained : ns.containedNamespaces.values() ) {
+			dumpNamespaces(contained);
+		}
+	}
+	
+	protected static void dumpNamespaces(Namespace ns) {
+		ArrayList<String> summaryLines = new ArrayList<String>();
+		dumpNamespaces(ns, summaryLines);
+		Collections.sort(summaryLines);
+		for( String l : summaryLines ) System.out.println(l);
+	}
+	
 	static String USAGE_TEXT =
 		"Usage: SchemaProcessor [options] [schema file]\n" +
 		"Options:\n" +
@@ -75,6 +103,7 @@ public class SchemaProcessor
 		"  -o-db-scripts <dir>\n" +
 		"  -o-create-tables-script <file>\n" +
 		"  -o-drop-tables-script <file>\n" +
+		"  -dump-predefs ; print predefined notions and exit\n" +
 		"  -? or -h ; output help text and exit";
 	
 	public static void _main( String[] args ) throws Exception {
@@ -101,6 +130,9 @@ public class SchemaProcessor
 			if( "-?".equals(args[i]) || "-h".equals(args[i]) || "--help".equals(args[i]) ) {
 				System.out.println(USAGE_TEXT);
 				System.exit(0);
+			} else if( "-dump-predefs".equals(args[i]) ) {
+				dumpNamespaces(Namespace.ROOT);
+				System.exit(1);
 			} else if( "-namespace-abbreviation".equals(args[i]) ) {
 				String abbreviation = args[++i];
 				String prefix = args[++i];
