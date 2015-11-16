@@ -175,10 +175,9 @@ public class SchemaProcessor
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("enum", new SchemaInterpreter.EnumModifierSpec(Core.VALUE_TYPE) );
-		// TODO: Shouldn't need to do this since the 'sequence' type is already defined
-		sp.defineCommand("sequence", sp.new ObjectCommandInterpreter(RDB.SEQUENCE));
 		
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
+		CommandInterpreters.defineExtensionCommand(sp);
 		CommandInterpreters.defineImportCommand(sp);
 		
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();

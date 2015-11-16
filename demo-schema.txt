@@ -2,6 +2,11 @@ import everything from 'http://ns.nuke24.net/Schema/'
 import everything from 'http://ns.nuke24.net/Schema/DataTypeTranslation/'
 import everything from 'http://ns.nuke24.net/Schema/Application/'
 
+import 'http://ns.nuke24.net/Schema/Types/Number'
+import 'http://ns.nuke24.net/Schema/Types/Integer'
+import 'http://ns.nuke24.net/Schema/Types/Boolean'
+import 'http://ns.nuke24.net/Schema/Types/String' as 'text'
+
 import 'http://schema.org/True' as 'true'
 import 'http://schema.org/False' as 'false'
 import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
@@ -14,17 +19,22 @@ import 'http://ns.nuke24.net/Schema/RDB/defaultValueSequence'
 
 sequence 'entity ID sequence' : initial value @ 1001
 
-class 'integer' :
+extend 'integer' :
 	SQL type @ "INT" :
-	PHP type @ "int" : JSON type @ "number"
-class 'boolean' :
+	PHP type @ "int" :
+	JSON type @ "number"
+extend 'boolean' :
 	SQL type @ "BOOLEAN" :
-	PHP type @ "bool" : JSON type @ "boolean"
-class 'string' :
-	SQL type @ "VARCHAR(127)" :
-	PHP type @ "string" : JSON type @ "string"
-class 'text' : extends(string) :
-	SQL type @ "TEXT"
+	PHP type @ "bool" :
+	JSON type @ "boolean"
+extend 'text' :
+	SQL type @ "text" :
+	PHP type @ "string" :
+	JSON type @ "string"
+
+class 'short string' : extends(text) :
+	SQL type @ "VARCHAR(127)"
+
 class 'entity ID' : extends(integer) :
 	SQL type @ "BIGINT"
 class 'percentage' : extends(integer) :
@@ -53,17 +63,17 @@ enum mood {
 
 class 'resource' : SRR {
 	ID : EIPK
-	URN : string
+	URN : short string
 	type : enum(audio, video, image, document)
 }
 
 class 'person' : SRR {
 	ID : EIPK
-	name : string
+	name : short string
 	# Demonstrate a field that does not have a corresponding
 	# database column (default assumption for fields of
 	# table-mapped classes is that they do have one):
-	ziggurat : string : has a database column @ false :
+	ziggurat : short string  : has a database column @ false :
 		comment @ "A dummy column which exists solely for demonstrative porpoises."
 }
 
