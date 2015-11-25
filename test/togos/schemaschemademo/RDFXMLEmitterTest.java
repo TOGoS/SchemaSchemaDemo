@@ -53,7 +53,7 @@ public class RDFXMLEmitterTest extends TestCase
 		re.close();
 		re.close();
 		assertEquals(
-			"<rdf:RDF xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\" xmlns:junk=\""+JUNK_NS+"\">\n"+
+			"<rdf:RDF xmlns:junk=\""+JUNK_NS+"\" xmlns:rdf=\""+RDFXMLEmitter.RDF_NS+"\">\n"+
 			"\t<junk:CornFlake rdf:ID=\"CF1\">\n"+
 			"\t\t<junk:crunchiness>much</junk:crunchiness>\n"+
 			"\t</junk:CornFlake>\n"+
