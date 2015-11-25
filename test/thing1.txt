@@ -1,0 +1,8 @@
+import 'http://ns.nuke24.net/Schema/Types/Class'
+import 'http://ns.nuke24.net/Schema/longName'
+import 'http://ns.nuke24.net/Schema/comment'
+
+class 'thingy' : long name @ "http://ns.example.com/Thingy"
+
+thingy 'foo' : comment @ "Very fooey."
+thingy 'bar' : comment @ "Very barey."

@@ -1,0 +1,26 @@
+<rdf:RDF xmlns:app="http://ns.nuke24.net/Schema/Application/" xmlns:dtx="http://ns.nuke24.net/Schema/DataTypeTranslation/" xmlns:example="http://ns.example.com/" xmlns:rdb="http://ns.nuke24.net/Schema/RDB/" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#" xmlns:schema="http://ns.nuke24.net/Schema/" xmlns:types="http://ns.nuke24.net/Schema/Types/">
+	<types:Class rdf:about="http://ns.nuke24.net/Schema/Types/Class">
+		<schema:name>class</schema:name>
+	</types:Class>
+	<types:Predicate rdf:about="http://ns.nuke24.net/Schema/longName">
+		<schema:name>long name</schema:name>
+		<schema:valueType rdf:resource="http://ns.nuke24.net/Schema/Types/String"/>
+		<schema:comment>globally unique name; usually in URI form</schema:comment>
+	</types:Predicate>
+	<types:Predicate rdf:about="http://ns.nuke24.net/Schema/comment">
+		<schema:name>comment</schema:name>
+		<schema:valueType rdf:resource="http://ns.nuke24.net/Schema/Types/String"/>
+		<schema:comment>a note about the subject</schema:comment>
+	</types:Predicate>
+	<types:Class rdf:about="http://ns.example.com/Thingy">
+		<schema:name>thingy</schema:name>
+	</types:Class>
+	<example:Thingy rdf:ID="Foo">
+		<schema:name>foo</schema:name>
+		<schema:comment>Very fooey.</schema:comment>
+	</example:Thingy>
+	<example:Thingy rdf:ID="Bar">
+		<schema:name>bar</schema:name>
+		<schema:comment>Very barey.</schema:comment>
+	</example:Thingy>
+</rdf:RDF>
