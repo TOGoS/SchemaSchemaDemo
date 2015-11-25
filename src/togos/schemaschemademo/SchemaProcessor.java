@@ -179,6 +179,7 @@ public class SchemaProcessor
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineExtensionCommand(sp);
 		CommandInterpreters.defineImportCommand(sp);
+		CommandInterpreters.defineAliasCommand(sp);
 		
 		TableClassFilter<CompileError> tableClassFilter = new TableClassFilter<CompileError>();
 		ClassClassFilter<ComplexType, CompileError> complexTypeFilter = new ClassClassFilter<ComplexType, CompileError>(ComplexType.class); 
