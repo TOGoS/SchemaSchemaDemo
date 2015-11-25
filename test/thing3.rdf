@@ -12,7 +12,7 @@
 		<schema:valueType rdf:resource="http://ns.nuke24.net/Schema/Types/String"/>
 		<schema:comment>a note about the subject</schema:comment>
 	</types:Predicate>
-	<types:Function rdf:ID="Concat">
+	<types:Function rdf:about="http://ns.nuke24.net/Schema/Functions/concat">
 		<schema:name>concat</schema:name>
 	</types:Function>
 	<types:Class rdf:about="http://ns.example.com/Frob">
