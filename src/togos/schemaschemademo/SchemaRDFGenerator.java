@@ -83,6 +83,10 @@ public class SchemaRDFGenerator implements StreamDestination<SchemaObject, Excep
 	}
 	
 	protected void emitPrimary(SchemaObject obj) throws IOException {
+		// If an object is completely blank, don't emit it!
+		// Otherwise we'd end up emitting blank Descriptions for aliases.
+		if( obj.getProperties().isEmpty() && obj.getLongName() == null && obj.getName() == null ) return;
+		
 		SchemaObject type = PropertyUtil.getFirstInheritedValue(obj, Core.TYPE, null);
 		re.openObject(type == null ? RDFXMLEmitter.RDF_NS+"Description" : getRef(type), getOrGenerateRef(obj));
 		for( Map.Entry<Predicate,Set<SchemaObject>> pe : obj.getProperties().entrySet() ) {

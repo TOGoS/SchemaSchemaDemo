@@ -48,6 +48,7 @@ public class SchemaRDFificationTest extends TestCase {
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineExtensionCommand(sp);
 		CommandInterpreters.defineImportCommand(sp);
+		CommandInterpreters.defineAliasCommand(sp);
 		
 		final SchemaRDFGenerator srg = new SchemaRDFGenerator(sw, namespacePrefixes);
 		sp.pipe(new StreamDestination<SchemaObject, CompileError>() {
@@ -108,5 +109,8 @@ public class SchemaRDFificationTest extends TestCase {
 	
 	public void testThing1() throws ScriptError, IOException {
 		assertRdfifiesTo( new File("test/thing1.rdf"), new File("test/thing1.txt") );
+	}
+	public void testThing2() throws ScriptError, IOException {
+		assertRdfifiesTo( new File("test/thing2.rdf"), new File("test/thing2.txt") );
 	}
 }

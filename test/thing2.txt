@@ -1,0 +1,7 @@
+import 'http://ns.nuke24.net/Schema/Types/Class'
+import 'http://ns.nuke24.net/Schema/longName'
+import 'http://ns.nuke24.net/Schema/comment'
+
+alias 'a string' = "Oh look how long this string is!  It is very long!"
+
+class 'frob' : long name @ "http://ns.example.com/Frob" : comment @ a string
