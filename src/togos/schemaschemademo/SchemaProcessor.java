@@ -31,6 +31,7 @@ import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.RDB;
 import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
+import togos.schemaschema.parser.Macros;
 import togos.schemaschema.parser.Parser;
 import togos.schemaschema.parser.SchemaInterpreter;
 import togos.schemaschema.parser.Tokenizer;
@@ -171,6 +172,7 @@ public class SchemaProcessor
 		sp.defineImportable( DataTypeTranslation.NS );
 		sp.defineImportable( RDB.NS );
 		sp.defineImportable( Types.NS );
+		sp.defineImportable( Macros.FUNCTIONS_NS );
 		
 		sp.defineFieldModifier("key", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );
 		sp.defineFieldModifier("index", SchemaInterpreter.FieldIndexModifierSpec.INSTANCE );

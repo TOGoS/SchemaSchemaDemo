@@ -19,6 +19,7 @@ import togos.schemaschema.namespaces.DataTypeTranslation;
 import togos.schemaschema.namespaces.RDB;
 import togos.schemaschema.namespaces.Types;
 import togos.schemaschema.parser.CommandInterpreters;
+import togos.schemaschema.parser.Macros;
 import togos.schemaschema.parser.Parser;
 import togos.schemaschema.parser.SchemaInterpreter;
 import togos.schemaschema.parser.Tokenizer;
@@ -45,6 +46,7 @@ public class SchemaRDFificationTest extends TestCase {
 		sp.defineImportable( DataTypeTranslation.NS );
 		sp.defineImportable( RDB.NS );
 		sp.defineImportable( Types.NS );
+		sp.defineImportable( Macros.FUNCTIONS_NS );
 		CommandInterpreters.defineTypeDefinitionCommands(sp);
 		CommandInterpreters.defineExtensionCommand(sp);
 		CommandInterpreters.defineImportCommand(sp);
@@ -112,5 +114,8 @@ public class SchemaRDFificationTest extends TestCase {
 	}
 	public void testThing2() throws ScriptError, IOException {
 		assertRdfifiesTo( new File("test/thing2.rdf"), new File("test/thing2.txt") );
+	}
+	public void testThing3() throws ScriptError, IOException {
+		assertRdfifiesTo( new File("test/thing3.rdf"), new File("test/thing3.txt") );
 	}
 }

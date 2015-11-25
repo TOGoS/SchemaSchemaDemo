@@ -1,0 +1,10 @@
+import 'http://ns.nuke24.net/Schema/Types/Class'
+import 'http://ns.nuke24.net/Schema/longName'
+import 'http://ns.nuke24.net/Schema/comment'
+import 'http://ns.nuke24.net/Schema/Functions/concat'
+
+alias 'a string' = concat(
+	"Oh look how long this string is!  It is very long!\n",
+	"It has two lines!")
+
+class 'frob' : long name @ "http://ns.example.com/Frob" : comment @ a string
