@@ -6,12 +6,17 @@ import java.util.List;
 
 public class XMLEmitter
 {
-	public static class Attribute {
+	public static class Attribute implements Comparable<Attribute> {
 		public final String name;
 		public final String value;
 		public Attribute( String n, String v ) {
 			this.name = n;
 			this.value = v;
+		}
+		@Override public int compareTo(Attribute other) {
+			int a = name.compareTo(other.name);
+			if( a != 0 ) return a;
+			return value.compareTo(other.value);
 		}
 	}
 	

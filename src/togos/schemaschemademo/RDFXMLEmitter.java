@@ -2,6 +2,7 @@ package togos.schemaschemademo;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -50,6 +51,7 @@ public class RDFXMLEmitter
 		for( Attribute ra : attrs ) {
 			xmlAttrs.add(new Attribute(abbreviate(ra.name), ra.value));
 		}
+		Collections.sort(xmlAttrs);
 		if( autoFormat && indent > 0 ) {
 			xe.text("\n");
 			for( int i=0; i<indent; ++i ) xe.text("\t");
