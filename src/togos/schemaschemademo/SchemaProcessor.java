@@ -1,9 +1,11 @@
 package togos.schemaschemademo;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.ArrayList;
@@ -312,9 +314,8 @@ public class SchemaProcessor
 		
 		for( String sourceFilename : sourceFilenames ) {
 			boolean isStdin = "-".equals(sourceFilename);
-			Reader sourceReader = isStdin ?
-				new InputStreamReader(System.in) :
-				new FileReader(sourceFilename);
+			final InputStream sourceStream = isStdin ? System.in : new FileInputStream(sourceFilename);
+			final Reader sourceReader = new InputStreamReader(sourceStream, "UTF-8");
 			
 			try {
 				t.setSourceLocation( sourceFilename, 1, 1 );
@@ -333,7 +334,7 @@ public class SchemaProcessor
 				e.printStackTrace();
 				System.exit(1);
 			} finally {
-				if( !isStdin ) sourceReader.close();
+				if( !isStdin ) sourceStream.close();
 			}
 		}
 		t.end();
