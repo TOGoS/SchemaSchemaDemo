@@ -79,17 +79,17 @@ class 'person' : SRR {
 		comment @ "A dummy column which exists solely for demonstrative porpoises."
 }
 
-class 'rating' : SRR : name in database @ "los_ratingos" : comment @ unindent @ «
+class 'rating' : SRR : name in database @ "los_ratingos" : comment @ unindent @ Â«
 	Oh hey look at this.
 	A multi-line comment!
 	
-	We can even use «those quote characters» in here, as long as they are balanced.
+	We can even use Â«those quote charactersÂ» in here, as long as they are balanced.
 	
-	"Double quoted" strings are fine, and there's no escape sequences within «...»,
+	"Double quoted" strings are fine, and there's no escape sequences within Â«...Â»,
 	so backslashes just mean themselves.  Look: \
 	
 	Oh, another line, wow!
-» {
+Â» {
 	author : reference(person) {
 		ID = author ID : key(primary)
 	}

@@ -35,7 +35,7 @@ bin: src ext-lib
 	rm -rf bin
 	mkdir -p bin
 	find src ext-lib/*/src -name '*.java' >.java-src.lst
-	javac -target 1.6 -source 1.6 -d bin @.java-src.lst
+	javac -encoding utf8 -target 1.6 -source 1.6 -d bin @.java-src.lst
 	${touch} bin
 
 SchemaSchemaDemo.jar: bin
