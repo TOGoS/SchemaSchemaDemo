@@ -136,6 +136,8 @@ public class SchemaProcessor {
 		namespacePrefixes.put("rdb", RDB.NS.prefix);
 		namespacePrefixes.put("app", Application.NS.prefix);
 		namespacePrefixes.put("dtx", DataTypeTranslation.NS.prefix);
+		
+		Macros.FUNCTIONS_NS.getClass(); // Make sure that's loaded
 
 		for (int i = 0; i < args.length; ++i) {
 			if ("-?".equals(args[i]) || "-h".equals(args[i])
