@@ -9,6 +9,7 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Map;
 
 import togos.asyncstream.BaseStreamSource;
 import togos.asyncstream.StreamDestination;
@@ -127,7 +128,7 @@ public class SchemaProcessor {
 		File outputDropTablesScriptFile = null;
 		Function<String, String> tableNamer = POSTGRES_CASIFIER;
 		Function<String, String> columnNamer = POSTGRES_CASIFIER;
-
+		
 		HashMap<String, String> namespacePrefixes = new HashMap<String, String>();
 		namespacePrefixes.put("rdf", Core.RDF_NS.prefix);
 		namespacePrefixes.put("rdfs", Core.RDFS_NS.prefix);
@@ -138,7 +139,7 @@ public class SchemaProcessor {
 		namespacePrefixes.put("dtx", DataTypeTranslation.NS.prefix);
 		
 		Macros.FUNCTIONS_NS.getClass(); // Make sure that's loaded
-
+		
 		for (int i = 0; i < args.length; ++i) {
 			if ("-?".equals(args[i]) || "-h".equals(args[i])
 					|| "--help".equals(args[i])) {
@@ -187,7 +188,7 @@ public class SchemaProcessor {
 		sp.defineImportable(RDB.NS);
 		sp.defineImportable(Types.NS);
 		sp.defineImportable(Macros.FUNCTIONS_NS);
-
+		
 		sp.defineFieldModifier("key",
 				SchemaInterpreter.FieldIndexModifierSpec.INSTANCE);
 		sp.defineFieldModifier("index",

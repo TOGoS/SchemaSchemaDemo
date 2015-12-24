@@ -7,6 +7,8 @@ import 'http://ns.nuke24.net/Schema/Types/Integer'
 import 'http://ns.nuke24.net/Schema/Types/Boolean'
 import 'http://ns.nuke24.net/Schema/Types/String' as 'text'
 
+import 'http://ns.nuke24.net/Schema/Functions/Unindent'
+
 import 'http://schema.org/True' as 'true'
 import 'http://schema.org/False' as 'false'
 import 'http://www.w3.org/2000/01/rdf-schema#isSubclassOf' as 'extends'
@@ -77,7 +79,17 @@ class 'person' : SRR {
 		comment @ "A dummy column which exists solely for demonstrative porpoises."
 }
 
-class 'rating' : SRR : name in database @ "los_ratingos" {
+class 'rating' : SRR : name in database @ "los_ratingos" : comment @ unindent @ «
+	Oh hey look at this.
+	A multi-line comment!
+	
+	We can even use «those quote characters» in here, as long as they are balanced.
+	
+	"Double quoted" strings are fine, and there's no escape sequences within «...»,
+	so backslashes just mean themselves.  Look: \
+	
+	Oh, another line, wow!
+» {
 	author : reference(person) {
 		ID = author ID : key(primary)
 	}
