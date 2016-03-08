@@ -80,6 +80,12 @@ public class SchemaProcessor
 						if( commentString == "" ) commentString = " ; ";
 						commentString += co.getScalarValue();
 					}
+					for( SchemaObject prop : PropertyUtil.getAllInheritedValues(sobj, Core.VALUE_TYPE) ) {
+						String n = prop.getLongName();
+						if( n == null ) n = prop.getName();
+						if( n != null ) commentString += " ; value should be a "+prop.getLongName();
+					}
+					
 					summaryLines.add(sobj.getLongName()+commentString);
 				}
 			}
