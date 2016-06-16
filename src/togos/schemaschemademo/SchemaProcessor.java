@@ -3,11 +3,14 @@ package togos.schemaschemademo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStreamWriter;
 import java.io.Reader;
+import java.io.Writer;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -93,6 +96,17 @@ public class SchemaProcessor
 		
 		for( Namespace contained : ns.containedNamespaces.values() ) {
 			dumpNamespaces(contained);
+		}
+	}
+	
+	protected static Writer fileWriter(File f) throws IOException {
+		FileUtil.mkParentDirs(f);
+		FileOutputStream os = new FileOutputStream(f);
+		try {
+			OutputStreamWriter w = new OutputStreamWriter(os, "UTF-8");
+			return w;
+		} catch( UnsupportedEncodingException e ) {
+			throw new RuntimeException("Apparently UTF-8 is an unsupported encoding.");
 		}
 	}
 	
@@ -199,8 +213,7 @@ public class SchemaProcessor
 		
 		if( outputCreateTablesScriptFile != null ) {
 			// TODO: Also output CREATE SEQUENCE stuff
-			FileUtil.mkParentDirs(outputCreateTablesScriptFile);
-			final FileWriter createTablesWriter = new FileWriter(outputCreateTablesScriptFile);
+			final Writer createTablesWriter = fileWriter(outputCreateTablesScriptFile);
 			final SQLEmitter createTablesSqlEmitter = new SQLEmitter(createTablesWriter);
 			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(createTablesSqlEmitter, tableNamer, columnNamer);
 			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
@@ -226,9 +239,8 @@ public class SchemaProcessor
 		}
 		
 		if( outputDropTablesScriptFile != null ) {
-			FileUtil.mkParentDirs(outputDropTablesScriptFile);
 			final ArrayList<String[]> tableList = new ArrayList<String[]>();
-			final FileWriter dropTablesWriter = new FileWriter(outputDropTablesScriptFile);
+			final Writer dropTablesWriter = fileWriter(outputDropTablesScriptFile);
 			final SQLEmitter dropTablesSqlEmitter = new SQLEmitter(dropTablesWriter);
 			final TableCreationSQLGenerator tcsg = new TableCreationSQLGenerator(dropTablesSqlEmitter, tableNamer, columnNamer);
 			tcsg.pipe(new StreamDestination<TableDefinition, CompileError>() {
@@ -254,9 +266,7 @@ public class SchemaProcessor
 		}
 		
 		if( outputSchemaRdfFile != null ) {
-			FileUtil.mkParentDirs(outputSchemaRdfFile);
-			
-			final FileWriter rdfSchemaWriter = new FileWriter(outputSchemaRdfFile);
+			final Writer rdfSchemaWriter = fileWriter(outputSchemaRdfFile);
 			final SchemaRDFGenerator srg = new SchemaRDFGenerator(rdfSchemaWriter, namespacePrefixes);
 			sp.pipe(new StreamDestination<SchemaObject, CompileError>() {
 				@Override public void data(SchemaObject value) throws CompileError {
@@ -279,9 +289,7 @@ public class SchemaProcessor
 		}
 		
 		if( outputSchemaPhpFile != null ) {
-			FileUtil.mkParentDirs(outputSchemaPhpFile);
-			
-			final FileWriter phpSchemaWriter = new FileWriter(outputSchemaPhpFile);
+			final Writer phpSchemaWriter = fileWriter(outputSchemaPhpFile);
 			final PHPSchemaDumper psd = new PHPSchemaDumper(phpSchemaWriter, phpSchemaClassNamespace);
 			complexTypeFilter.pipe(new StreamDestination<ComplexType, CompileError>() {
 				@Override public void data(ComplexType value) throws CompileError {
