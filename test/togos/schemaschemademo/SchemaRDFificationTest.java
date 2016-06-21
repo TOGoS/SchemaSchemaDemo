@@ -118,4 +118,7 @@ public class SchemaRDFificationTest extends TestCase {
 	public void testThing3() throws ScriptError, IOException {
 		assertRdfifiesTo( new File("test/thing3.rdf"), new File("test/thing3.txt") );
 	}
+	public void testThing4() throws ScriptError, IOException {
+		assertRdfifiesTo( new File("test/thing4.rdf"), new File("test/thing4.txt") );
+	}
 }

@@ -1,0 +1,6 @@
+import 'http://ns.nuke24.net/Schema/Types/Class'
+import 'http://ns.nuke24.net/Schema/longName'
+import 'http://ns.nuke24.net/Schema/comment'
+
+class 'hello' : long name @ "http://ns.example.com/Hello" :
+	comment @ 'urn:bitprint:SQ5HALIG6NCZTLXB7DNI56PXFFQDDVUZ.276TET7NAXG7FVCDQWOENOX4VABJSZ4GBV7QATQ'
