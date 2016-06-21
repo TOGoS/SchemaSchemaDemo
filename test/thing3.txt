@@ -1,7 +1,7 @@
 import 'http://ns.nuke24.net/Schema/Types/Class'
 import 'http://ns.nuke24.net/Schema/longName'
 import 'http://ns.nuke24.net/Schema/comment'
-import 'http://ns.nuke24.net/Schema/Functions/concat'
+import 'http://ns.nuke24.net/Schema/Functions/Concat'
 
 alias 'a string' = concat(
 	"Oh look how long this string is!  It is very long!\n",
